@@ -1,8 +1,14 @@
 <?php
+
 namespace danielme85\LaravelLogToDB;
 
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Class LogToDbServiceProvider
+ *
+ * @package danielme85\LaravelLogToDB
+ */
 class LogToDbServiceProvider extends ServiceProvider {
     /**
      * Indicates if loading of the provider is deferred.
@@ -33,10 +39,8 @@ class LogToDbServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        /*
         $this->app->bind('laravel-log-to-db', function() {
-            return new LaraStats();
+            return new LogToDb();
         });
-        */
     }
 }
