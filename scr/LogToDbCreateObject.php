@@ -13,57 +13,6 @@ trait LogToDbCreateObject
     protected $table = 'log';
 
     /**
-     * Create a Eloquent Model
-     *
-     * @param $record
-     * @return LogToDb self
-     */
-    public function newFromMonolog(array $record) : self
-    {
-        if (isset($record['message'])) {
-            $this->message = $record['message'];
-        }
-        /**
-         * Storing the error log details takes quite a bit of space in sql database compared to a log file,
-         * so this can be disabled in the config.
-         */
-        if (config('larastats.log.detailed')) {
-            if (isset($record['context'])) {
-                if (!empty($record['context'])) {
-                    $this->context = $record['context'];
-                }
-            }
-        }
-        if (isset($record['level'])) {
-            $this->level = $record['level'];
-        }
-        if (isset($record['level_name'])) {
-            $this->level_name = $record['level_name'];
-        }
-        if (isset($record['channel'])) {
-            $this->channel = $record['channel'];
-        }
-        if (isset($record['datetime'])) {
-            $this->datetime = $record['datetime'];
-        }
-        if (isset($record['extra'])) {
-            if (!empty($record['extra'])) {
-                $this->extra = $record['extra'];
-            }
-        }
-        $this->unix_time = time();
-
-        try {
-            $this->save();
-        } catch (\Exception $e) {
-            //Failed saving log
-        }
-
-
-        return $this;
-    }
-
-    /**
      * Context Accessor
      *
      * @param $value

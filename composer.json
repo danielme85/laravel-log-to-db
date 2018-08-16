@@ -25,10 +25,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "danielme85\\LaravelLogToDB\\ServiceProvider"
+                "danielme85\\LaravelLogToDB\\LogToDbServiceProvider"
             ],
             "aliases": {
-                "LaraStats": "danielme85\\LaravelLogToDB\\LogToDB"
+                "LogToDb": "danielme85\\LaravelLogToDB\\LogToDb"
             }
         }
     }
