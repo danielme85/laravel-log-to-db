@@ -10,8 +10,10 @@ use Monolog\Logger;
  *
  * @package danielme85\LaravelLogToDB
  */
-class LogToDbHandler extends AbstractProcessingHandler
+class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
 {
+    private $connection;
+    private $collection;
 
     /**
      * LogToDbHandler constructor.
@@ -19,8 +21,11 @@ class LogToDbHandler extends AbstractProcessingHandler
      * @param int $level The minimum logging level at which this handler will be triggered
      * @param bool $bubble Whether the messages that are handled can bubble up the stack or not
      */
-    function __construct($level = Logger::DEBUG, bool $bubble = true)
+    function __construct($connection = 'default', $level = Logger::DEBUG, $collection = 'log', bool $bubble = true)
     {
+        $this->connection = $connection;
+        $this->collection = $collection;
+
         parent::__construct($level, $bubble);
     }
 
@@ -33,12 +38,11 @@ class LogToDbHandler extends AbstractProcessingHandler
     {
         if (!empty($record)) {
             try {
-                $log = new LogToDb();
+                $log = new LogToDB($this->connection, $this->collection);
                 $log->newFromMonolog($record);
             } catch (\Exception $e) {
-                //Adding log failed.
+                //
             }
-
         }
     }
 }

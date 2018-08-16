@@ -9,9 +9,6 @@ namespace danielme85\LaravelLogToDB;
  */
 trait LogToDbCreateObject
 {
-    public $timestamps = false;
-    protected $table = 'log';
-
     /**
      * Context Accessor
      *

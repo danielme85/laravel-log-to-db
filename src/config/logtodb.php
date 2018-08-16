@@ -23,7 +23,8 @@ return [
     | DB Connection
     |--------------------------------------------------------------------------
     |
-    | Set database connection to use. Matches connections in the config/database.php.
+    | Set the default database connection to use. This is only used if no connection
+    | is specified in config/logging.php. Matches connections in the config/database.php.
     | The default is: 'default', this will use whatever is default in the Laravel DB
     | config file. To use a different or separate connection set the connection name here.
     | Ex: 'connection' => 'mysql' wil use the connection 'mysql' in database.php.
