@@ -139,8 +139,6 @@ class LogToDB
         }
         $log->unix_time = time();
 
-        d($this);
-
         $log->save();
 
         return $this;

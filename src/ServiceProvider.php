@@ -24,12 +24,12 @@ class ServiceProvider extends Provider {
      */
     public function boot()
     {
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
         $this->mergeConfigFrom(__DIR__.'/config/logtodb.php', 'logtodb');
-        /*
         $this->publishes([
             __DIR__.'/config/larastats.php' => config_path('larastats.php'),
         ]);
-        */
+
     }
 
     /**

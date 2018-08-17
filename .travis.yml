@@ -1,9 +1,13 @@
 language: php
 php:
   - 7.1
-  - 7.2
   - 7.3
+services:
+  - mysql
+  - mongodb
 before_script:
+  - pecl install mongod
+  - mysql -e 'CREATE DATABASE testing;'
   - composer install --no-interaction
 script:
   - vendor/bin/phpunit
