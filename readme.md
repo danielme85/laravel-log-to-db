@@ -1,7 +1,10 @@
 # Laravel Log-to-DB
+[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/danielme85/laravel-log-to-db)
+[![PHP from Packagist](https://img.shields.io/packagist/php-v/danielme85/laravel-log-to-db.svg?style=flat-square)](https://packagist.org/packages/danielme85/laravel-log-to-db)
+[![GitHub release](https://img.shields.io/github/release/danielme85/laravel-log-to-db.svg?style=flat-square)](https://packagist.org/packages/danielme85/laravel-log-to-db)
+[![GitHub tag](https://img.shields.io/github/tag/danielme85/laravel-log-to-db.svg?style=flat-square)](https://github.com/danielme85/laravel-log-to-db)
 [![Travis (.org)](https://img.shields.io/travis/danielme85/laravel-log-to-db.svg?style=flat-square)](https://travis-ci.org/danielme85/laravel-log-to-db)
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
-[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/danielme85/laravel-log-to-db)
 
 Custom Larvel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
 Uses Laravel native logging functionality.

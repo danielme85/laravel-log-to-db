@@ -56,7 +56,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $app['config']->set('logging.channels', [
             'stack' => [
                 'driver' => 'stack',
-                'channels' => ['database', 'mongodb', 'single'],
+                'channels' => ['database', 'mongodb'],
             ],
             'database' => [
                 'driver' => 'custom',
@@ -140,6 +140,13 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
             Log::channel('limited')->warning("Testing max rows: $i");
         }
         $this->assertLessThan(11, count(LogToDB::model('limited')->all()->toArray()));
+    }
+
+    public function testException() {
+        $e = new Symfony\Component\HttpKernel\Exception\BadRequestHttpException("This is a fake 500 error", null, 500, ['fake-header' => 'value']);
+        Log::warning("Error", ['exception' => $e, 'more' => 'infohere']);
+        $log = LogToDB::model()->where('message', 'Error')->first();
+        $this->assertNotEmpty($log->context);
     }
 
     public function testCleanup() {

@@ -53,18 +53,51 @@ trait LogToDbCreateObject
             if (!empty($value['exception'])) {
                 $exception = $value['exception'];
                 if (strpos(get_class($exception), "\Exception") !== false) {
-                    $newexception =
-                    [
-                        'class' => get_class($exception),
-                        'message' => $exception->getMessage(),
-                        'code' => $exception->getCode(),
-                        'file' => $exception->getFile(),
-                        'line' => $exception->getLine(),
-                        'trace' => $exception->getTrace(),
-                        'previous' => $exception->getPrevious(),
-                        'severity' => $exception->getSeverity(),
+                    $newexception = [];
+                    $newexception['class'] = get_class($exception);
+                    if (method_exists($exception, 'getMessage')) {
+                        $newexception['message'] = $exception->getMessage();
+                    }
+                    else {
+                        $newexception['message'] = '';
+                    }
+                    if (method_exists($exception, 'getCode')) {
+                        $newexception['code'] = $exception->getCode();
+                    }
+                    else {
+                        $newexception['code'] = '';
+                    }
+                    if (method_exists($exception, 'getFile')) {
+                        $newexception['file'] = $exception->getFile();
+                    }
+                    else {
+                        $newexception['file'] = '';
+                    }
+                    if (method_exists($exception, 'getLine')) {
+                        $newexception['line'] = $exception->getLine();
+                    }
+                    else {
+                        $newexception['line'] = '';
+                    }
+                    if (method_exists($exception, 'getTrace')) {
+                        $newexception['trace'] = $exception->getTrace();
+                    }
+                    else {
+                        $newexception['trace'] = '';
+                    }
+                    if (method_exists($exception, 'getPrevious')) {
+                        $newexception['previous'] = $exception->getPrevious();
+                    }
+                    else {
+                        $newexception['previous'] = '';
+                    }
+                    if (method_exists($exception, 'getSeverity')) {
+                        $newexception['severity'] = $exception->getSeverity();
+                    }
+                    else {
+                        $newexception['severity'] = '';
+                    }
 
-                    ];
                     $value['exception'] = $newexception;
                 }
             }
