@@ -1,12 +1,15 @@
 language: php
 php:
-  - 7.1
+  - 7.2
 services:
   - mysql
   - mongodb
 before_script:
   - pecl install mongodb
   - mysql -e 'CREATE DATABASE testing;'
+  - composer self-update
   - composer install --no-interaction
 script:
-  - vendor/bin/phpunit
+  - vendor/bin/phpunit --coverage-clover=coverage.xml
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

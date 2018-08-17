@@ -71,6 +71,14 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'level' => 'debug',
                 'connection' => 'mongodb',
                 'collection' => 'log'
+            ],
+            'limited' => [
+                'driver' => 'custom',
+                'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+                'level' => 'warning',
+                'detailed' => false,
+                'max_rows' => 10,
+                'name' => 'limited',
             ]
         ]);
     }
@@ -115,7 +123,23 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertNotEmpty($logReaderMongoDB);
         $this->assertCount(8, $logReader);
         $this->assertCount(8, $logReaderMongoDB);
+    }
 
+    public function testLoggingToChannels() {
+        //Test limited config, with limited rows and level
+        Log::channel('limited')->debug("This message should not be stored because DEBUG is LOWER then WARNING");
+        $this->assertEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'DEBUG')->get()->toArray());
+
+        //Test limited config, with limited rows and level
+        Log::channel('limited')->warning("This message should be stored because WARNING = WARNING");
+        $this->assertNotEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'WARNING')->get()->toArray());
+    }
+
+    public function testMaxRows() {
+        for ($i = 1; $i <= 20; $i++) {
+            Log::channel('limited')->warning("Testing max rows: $i");
+        }
+        $this->assertLessThan(11, count(LogToDB::model('limited')->all()->toArray()));
     }
 
     public function testCleanup() {
@@ -124,5 +148,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
 
         $this->assertEmpty(LogToDB::model()::all()->toArray());
         $this->assertEmpty(LogToDB::model('mongodb')::all()->toArray());
+        $this->assertEmpty(LogToDB::model('limited')::all()->toArray());
+        $this->assertEmpty(LogToDB::model('database')::all()->toArray());
+
     }
 }

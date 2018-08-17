@@ -1,21 +1,12 @@
 <?php
     /*
     |--------------------------------------------------------------------------
-    | Laravel Log To DB
+    | Default Config for Laravel Log-To-DB
     |--------------------------------------------------------------------------
     |
-    | The Laravel Log To DB driver/handler relies on a custom Laravel Log Driver
-    | that writes logs to a DB table.
-    | A detailed error log with the stack trace and all takes a little more space
-    | when stored in a database compared to a txt-based log file.
-    | There are a couple of ways to reduce the storage needs:
-    |   * Detailed context of the stack trace during an Exception/Error Log event
-    |     takes up a lot more space then just the basic log info.
-    |     set 'detailed' => false to only get the Log event and not the stack trace.
-    |   * Since this logger stores events in DB instead of a txt-file you can
-    |     specify a max number of rows to be stored. The oldest log event/row wil be
-    |     removed when the limit is hit. Set 'max-rows' => 1000, for no limit set
-    |     'max_rows' => false.
+    |   These settings are ONLY USED if they are not specified per channel
+    |   in the config/logging.php file.
+    |
     */
 return [
     /*
@@ -37,9 +28,17 @@ return [
     | *MongoDB is supported with: "jenssegers/laravel-mongodb".
     | https://github.com/jenssegers/laravel-mongodb
     | laravel-mongodb is required to use the mongodb option for logging.
-    |
     */
     'connection' => 'default',
+
+    /*
+    |--------------------------------------------------------------------------
+    | DB Collection
+    |--------------------------------------------------------------------------
+    |
+    | Set the default database collection/table to use.
+    */
+    'collection' => 'log',
 
     /*
     |--------------------------------------------------------------------------

@@ -11,6 +11,7 @@ Homestead.yaml
 .env
 .vagrant
 composer.lock
+coverage.xml
 .phpstorm.meta.php
 _ide_helper.php
 _ide_helper_models.php.php

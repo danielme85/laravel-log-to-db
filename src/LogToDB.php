@@ -9,41 +9,79 @@ namespace danielme85\LaravelLogToDB;
  */
 class LogToDB
 {
+    /**
+     * Connection referenced in logging config.
+     * @var null
+     */
     public $channelConnection;
-
-    public $detailed = false;
-
-    public $maxRows = false;
-
-    //DB Connection to use
-    public $connection = 'default';
-
+    /**
+     * Store detailed log
+     * @var string
+     */
+    public $detailed;
+    /**
+     * Max number of allowed rows
+     * @var bool
+     */
+    public $maxRows;
+    /**
+     * Connection reference in databases config.
+     * @var string
+     */
+    public $connection;
+    /**
+     * The table in SQL or Collection in noSQL.
+     * @var string
+     */
     public $collection;
-
-    private $database = null;
+    /**
+     * The DB config details
+     * @var null
+     */
+    private $database;
 
     /**
      * LogToDB constructor.
+     *
+     * @param null $channelConnection
+     * @param null $collection
+     * @param null $detailed
+     * @param null $maxRows
      */
-    function __construct($channelConnection = null, $collection = 'log')
+    function __construct($channelConnection = null, $collection = null, $detailed = null, $maxRows = null)
     {
-        $this->channelConnection = $channelConnection;
-        $this->collection = $collection;
-
-        //Set config data
+        //Log default config if present
         $config = config('logtodb');
         if (!empty($config)) {
             if (isset($config['connection'])) {
                 $this->connection = $config['connection'];
             }
+            if (isset($config['collection'])) {
+                $this->collection = $config['collection'];
+            }
             if (isset($config['detailed'])) {
                 $this->detailed = $config['detailed'];
             }
             if (isset($config['max_rows'])) {
-                $this->maxRows = $config['max_rows'];
+                $this->maxRows = (int)$config['max_rows'];
             }
         }
 
+        //Set config based on specified config from the Log handler
+        if (!empty($channelConnection)) {
+            $this->channelConnection = $channelConnection;
+        }
+        if (!empty($collection)) {
+            $this->collection = $collection;
+        }
+        if (!empty($detailed)) {
+            $this->detailed = $detailed;
+        }
+        if (!empty($maxRows)) {
+            $this->maxRows = (int)$maxRows;
+        }
+
+        //Get the DB connections
         $dbconfig = config('database.connections');
 
         if (!empty($this->channelConnection)) {
@@ -67,10 +105,42 @@ class LogToDB
     }
 
     /**
-     * @return string
+     * Return a new LogToDB Module instance.
+     *
+     * @param string|null $channel
+     * @param string|null $connection
+     * @param string|null $collection
+     *
+     * @return DBLog|DBLogMongoDB
      */
-    public static function model($channelConnection = null) {
-        $model = new self($channelConnection);
+    public static function model(string $channel = null, string $connection = null, string $collection = null)
+    {
+        $conn = null;
+        $coll = null;
+
+        if (!empty($channel)) {
+            $channels = config('logging.channels');
+            if (isset($channels[$channel])) {
+                if (isset($channels[$channel]['connection']) and !empty($channels[$channel]['connection'])) {
+                    $conn = $channels[$channel]['connection'];
+                }
+                if (isset($channels[$channel]['collection']) and !empty($channels[$channel]['collection'])) {
+                    $coll = $channels[$channel]['collection'];
+                }
+            }
+        }
+        else {
+            if (!empty($connection)) {
+                $conn = $connection;
+            }
+            if (!empty($collection)) {
+                $coll = $collection;
+            }
+        }
+
+        //Return new instance of this model
+        $model = new self($conn, $coll);
+
         return $model->getModel();
     }
 
@@ -96,7 +166,6 @@ class LogToDB
      */
     public function newFromMonolog(array $record) : self
     {
-
         if ($this->database['driver'] === 'mongodb') {
             //MongoDB has its own Model
             $log = new DBLogMongoDB($this->connection, $this->collection);
@@ -109,10 +178,6 @@ class LogToDB
         if (isset($record['message'])) {
             $log->message = $record['message'];
         }
-        /**
-         * Storing the error log details takes quite a bit of space in sql database compared to a log file,
-         * so this can be disabled in the config.
-         */
         if ($this->detailed) {
             if (isset($record['context'])) {
                 if (!empty($record['context'])) {
@@ -139,9 +204,31 @@ class LogToDB
         }
         $log->unix_time = time();
 
-        $log->save();
+        if ($log->save()) {
+            if (!empty($this->maxRows)) {
+                $this->removeOldestIfMaxRows();
+            }
+        }
 
         return $this;
+    }
+
+    /**
+     * Delete the oldest record based on unix_time
+     *
+     * @return bool success
+     */
+    private function removeOldestIfMaxRows() {
+        $model = $this->model();
+        $current = $model->count();
+        if ($current > $this->maxRows) {
+            $oldest = $model->orderBy('unix_time', 'ASC')->first();
+            if ($oldest->delete()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

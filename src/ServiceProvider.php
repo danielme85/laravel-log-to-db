@@ -27,9 +27,8 @@ class ServiceProvider extends Provider {
         $this->loadMigrationsFrom(__DIR__.'/migrations');
         $this->mergeConfigFrom(__DIR__.'/config/logtodb.php', 'logtodb');
         $this->publishes([
-            __DIR__.'/config/larastats.php' => config_path('larastats.php'),
+            __DIR__.'/config/logtodb.php' => config_path('logtodb.php'),
         ]);
-
     }
 
     /**
