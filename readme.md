@@ -7,8 +7,7 @@ Uses Laravel native logging functionality.
 require danielme85/laravel-log-to-db
 ```
 
-
-###Configuration
+### Configuration
 Starting with Laravel 5.6 you will have a new settings file: "config/logging.php". 
 You will need to add an array under 'channels' for Log-to-DB here like so:
 ```php
@@ -55,11 +54,11 @@ You can log multiple levels to multiple DB connections... the possibilities are 
 ]
 ```
 
-###Usage
+### Usage
 Since this is a custom log channel for Laravel, all "standard" ways of generating log events etc should work with 
 the Laravel Log Facade. See https://laravel.com/docs/5.6/logging for more information.
 
-####Viewing/Getting The Log
+#### Viewing/Getting The Log
 The logging by this channel is done trough the Eloquent Model builder. To get access to the underlying models use:
 ```php
 $log = danielme85\LaravelLogToDB\LogToDB::model();
