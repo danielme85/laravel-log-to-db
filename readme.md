@@ -9,7 +9,7 @@
 Custom Larvel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
 Uses Laravel native logging functionality.
 
-### Installation
+## Installation
 ```
 require danielme85/laravel-log-to-db
 ```
@@ -19,7 +19,7 @@ If you are going to be using SQL database server to store log events you would n
 php artisan migrate
 ```
 
-### Configuration
+## Configuration
 Starting with Laravel 5.6 you will have a new settings file: "config/logging.php". 
 You will need to add an array under 'channels' for Log-to-DB here like so:
 ```php
@@ -46,7 +46,7 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
 More info about some of these options: https://laravel.com/docs/5.6/logging#customizing-monolog-for-channels
 
 There are some default settings and more information about configuring the logger in the 'logtodb.php' config file.
-This can be copied to your project so you can edit it with the vendor publish command.
+This could be copied to your project if you would like edit it with the vendor publish command.
 ```
 php artisan vendor:publish
 ```
@@ -58,6 +58,42 @@ Log::channel('mongodb')->info("This thing just happened");
 ```
 This logger works the same as any other across Laravel, for example you can add it to a stack. 
 You can log multiple levels to multiple DB connections... the possibilities are ENDLESS! 😎
+
+#### Log Worker Queue
+It might be a good idea to save the log events with a Queue Worker. This way your server does not have to wait for
+the save process to finish. You would have to configure the Laravel Queue settings and run the Queue listener. 
+https://laravel.com/docs/5.6/queues#running-the-queue-worker
+
+## Usage
+Since this is a custom log channel for Laravel, all "standard" ways of generating log events etc should work with 
+the Laravel Log Facade. See https://laravel.com/docs/5.6/logging for more information.
+
+#### Fetching Logs
+The logging by this channel is done trough the Eloquent Model builder.
+LogToDB::model($channel, $connection, $collection);
+You can skip all function variables and the default settings from the config/logtodb.php will be used.
+```php
+$model = LogToDB::model();
+$model->all(); //All logs for defualt channel/connection
+```
+
+Some more examples of getting logs
+```php
+$logs = LogToDB::model()->all();
+$logs = LogToDB::model()->where('id' = $id)->first();
+```
+
+When getting logs for specific channel or DB connection and collection you can either use the channel name matching 
+config/logging.php or connection name from config/databases.php. You can also specify collection/table name if needed as 
+the third function variable when fetching the model.  
+```php
+$logsFromDefault = LogDB::model()->all();
+$logsFromChannel = LogDB::model('database')->all();
+$logsFromMysql   = LogToDB::model(null, 'mysql')->all();
+$logsFromMongoDB = LogToDB::model(null, 'mongodb', 'log')->all();
+```
+
+##### Advanced /config/logging.php example
 ```php
 'default' => env('LOG_CHANNEL', 'stack'),
 
@@ -90,33 +126,4 @@ You can log multiple levels to multiple DB connections... the possibilities are 
     ],
     //....
 ]
-```
-
-### Usage
-Since this is a custom log channel for Laravel, all "standard" ways of generating log events etc should work with 
-the Laravel Log Facade. See https://laravel.com/docs/5.6/logging for more information.
-
-#### Fetching Logs
-The logging by this channel is done trough the Eloquent Model builder.
-LogToDB::model($channel, $connection, $collection);
-You can skip all function variables and the default settings from the config/logtodb.php will be used.
-```php
-$model = LogToDB::model();
-$model->all(); //All logs for defualt channel/connection
-```
-
-Some more examples of getting logs
-```php
-$logs = LogToDB::model()->all();
-$logs = LogToDB::model()->where('id' = $id)->first();
-```
-
-When getting logs for specific channel or DB connection and collection you can either use the channel name matching 
-config/logging.php or connection name from config/databases.php. You can also specify collection/table name if needed as 
-the third function variable when fetching the model.  
-```php
-$logsFromDefault = LogDB::model()->all();
-$logsFromChannel = LogDB::model('database')->all();
-$logsFromMysql   = LogToDB::model(null, 'mysql')->all();
-$logsFromMongoDB = LogToDB::model(null, 'mongodb', 'log')->all();
 ```

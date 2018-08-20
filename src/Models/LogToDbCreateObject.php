@@ -1,6 +1,6 @@
 <?php
 
-namespace danielme85\LaravelLogToDB;
+namespace danielme85\LaravelLogToDB\Models;
 
 /**
  * Trait LogToDbCreateObject

@@ -1,6 +1,9 @@
 <?php
 
 namespace danielme85\LaravelLogToDB;
+use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
+use danielme85\LaravelLogToDB\Models\DBLog;
+use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
 
 /**
  * Class LogToDb
@@ -34,6 +37,10 @@ class LogToDB
      * @var string
      */
     public $collection;
+
+    public $saveWithQueue;
+
+
     /**
      * The DB config details
      * @var null
@@ -64,6 +71,9 @@ class LogToDB
             }
             if (isset($config['max_rows'])) {
                 $this->maxRows = (int)$config['max_rows'];
+            }
+            if (isset($config['queue_db_saves'])) {
+                $this->saveWithQueue = $config['queue_db_saves'];
             }
         }
 
@@ -204,11 +214,21 @@ class LogToDB
         }
         $log->unix_time = time();
 
-        if ($log->save()) {
-            if (!empty($this->maxRows)) {
-                $this->removeOldestIfMaxRows();
+        if (!empty($this->saveWithQueue)) {
+            if(dispatch(new SaveNewLogEvent($log))->onQueue($this->saveWithQueue)) {
+                if (!empty($this->maxRows)) {
+                    $this->removeOldestIfMaxRows();
+                }
             }
         }
+        else {
+            if ($log->save()) {
+                if (!empty($this->maxRows)) {
+                    $this->removeOldestIfMaxRows();
+                }
+            }
+        }
+
 
         return $this;
     }

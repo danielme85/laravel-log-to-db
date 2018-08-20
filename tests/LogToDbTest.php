@@ -2,6 +2,8 @@
 
 use danielme85\LaravelLogToDB\LogToDB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
+use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 
 class LogToDbTest extends Orchestra\Testbench\TestCase
 {
@@ -14,9 +16,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
 
         $this->artisan('migrate', ['--database' => 'mysql']);
 
-        $this->beforeApplicationDestroyed(function () {
-            $this->artisan('migrate:rollback', ['--database' => 'mysql']);
-        });
     }
     /**
      * Define environment setup.
@@ -147,6 +146,24 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         Log::warning("Error", ['exception' => $e, 'more' => 'infohere']);
         $log = LogToDB::model()->where('message', 'Error')->first();
         $this->assertNotEmpty($log->context);
+    }
+
+    /**
+     * @group queue
+     *
+     */
+    public function testQueue() {
+        Queue::fake();
+
+        config()->set('logtodb.queue_db_saves', 'saveLogJob');
+
+        Log::info("I'm supposed to be added to the queue...");
+        Log::warning("I'm supposed to be added to the queue...");
+        Log::debug("I'm supposed to be added to the queue...");
+
+        Queue::assertPushedOn(config('logtodb.queue_db_saves'), SaveNewLogEvent::class);
+        Queue::assertPushed(SaveNewLogEvent::class, 6);
+
     }
 
     public function testCleanup() {

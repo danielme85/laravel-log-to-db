@@ -1,6 +1,6 @@
 <?php
 
-namespace danielme85\LaravelLogToDB;
+namespace danielme85\LaravelLogToDB\Models;
 
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
@@ -13,7 +13,6 @@ class DBLogMongoDB extends Eloquent
 {
     use LogToDbCreateObject;
 
-    public $timestamps = false;
     protected $connection;
     protected $collection;
 

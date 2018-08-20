@@ -23,6 +23,7 @@ class CreateLogTable extends Migration
             $table->text('datetime')->nullable();
             $table->longText('context')->nullable();
             $table->text('extra')->nullable();
+            $table->timestamps();
         });
     }
 

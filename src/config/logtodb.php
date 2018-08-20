@@ -62,4 +62,17 @@ return [
     | 'max_rows' => false for no limit.
     */
     'max_rows' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Name of Queue
+    |--------------------------------------------------------------------------
+    |
+    | It might be a good idea to save log events with the queue helper.
+    | This way the requests going to your sever does not have to wait for the Log
+    | event to be saved. Set to a string like: 'queue_db_saves' => 'logWorker',
+    | and make sure to run the queue worker.
+    | https://laravel.com/docs/5.6/queues#running-the-queue-worker
+    */
+    'queue_db_saves' => false,
 ];

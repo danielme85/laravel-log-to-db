@@ -1,6 +1,6 @@
 <?php
 
-namespace danielme85\LaravelLogToDB;
+namespace danielme85\LaravelLogToDB\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,7 +13,6 @@ class DBLog extends Model
 {
     use LogToDbCreateObject;
 
-    public $timestamps = false;
     protected $connection;
     protected $table;
 
