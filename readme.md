@@ -50,6 +50,11 @@ This could be copied to your project if you would like edit it with the vendor p
 ```
 php artisan vendor:publish
 ```
+Use the default Laravel Facade "Log"
+```php
+Log::channel()->info("This thing just happened");
+Log::channel()->warning("This kind of bad thing happened...");
+```
 You can give the logging channels whatever name you want instead of: 'database', as well as the log levels.
 The naming can be used later if you want to send a Log event to a specific channel:
 ```php
