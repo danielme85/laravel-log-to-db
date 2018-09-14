@@ -38,8 +38,10 @@ class LogToDB
      */
     public $collection;
 
+    /**
+     * @var mixed
+     */
     public $saveWithQueue;
-
 
     /**
      * The DB config details
@@ -214,21 +216,27 @@ class LogToDB
         }
         $log->unix_time = time();
 
-        if (!empty($this->saveWithQueue)) {
-            if(dispatch(new SaveNewLogEvent($log))->onQueue($this->saveWithQueue)) {
-                if (!empty($this->maxRows)) {
-                    $this->removeOldestIfMaxRows();
+        if (!empty($this->connection)) {
+            if (!empty($this->saveWithQueue)) {
+                try {
+                    if (dispatch(new SaveNewLogEvent($log))->onQueue($this->saveWithQueue)) {
+                        if (!empty($this->maxRows)) {
+                            $this->removeOldestIfMaxRows();
+                        }
+                    }
+                } catch (\Exception $e) {
+                }
+            } else {
+                try {
+                    if ($log->save()) {
+                        if (!empty($this->maxRows)) {
+                            $this->removeOldestIfMaxRows();
+                        }
+                    }
+                } catch (\Exception $e) {
                 }
             }
         }
-        else {
-            if ($log->save()) {
-                if (!empty($this->maxRows)) {
-                    $this->removeOldestIfMaxRows();
-                }
-            }
-        }
-
 
         return $this;
     }
