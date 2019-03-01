@@ -155,15 +155,13 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     public function testQueue() {
         Queue::fake();
 
-        config()->set('logtodb.queue_db_saves', 'saveLogJob');
+        config()->set('logtodb.queue_db_saves', true);
 
         Log::info("I'm supposed to be added to the queue...");
         Log::warning("I'm supposed to be added to the queue...");
         Log::debug("I'm supposed to be added to the queue...");
 
-        Queue::assertPushedOn(config('logtodb.queue_db_saves'), SaveNewLogEvent::class);
         Queue::assertPushed(SaveNewLogEvent::class, 6);
-
     }
 
     public function testCleanup() {
@@ -174,6 +172,5 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertEmpty(LogToDB::model('mongodb')::all()->toArray());
         $this->assertEmpty(LogToDB::model('limited')::all()->toArray());
         $this->assertEmpty(LogToDB::model('database')::all()->toArray());
-
     }
 }

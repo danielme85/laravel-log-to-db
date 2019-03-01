@@ -4,6 +4,7 @@ namespace danielme85\LaravelLogToDB;
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\Models\DBLog;
 use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
+use danielme85\LaravelLogToDB\Models\CreateLogFromRecord;
 
 /**
  * Class LogToDb
@@ -47,7 +48,7 @@ class LogToDB
      * The DB config details
      * @var null
      */
-    private $database;
+    public $database;
 
     /**
      * LogToDB constructor.
@@ -178,56 +179,29 @@ class LogToDB
      */
     public function newFromMonolog(array $record) : self
     {
-        if ($this->database['driver'] === 'mongodb') {
-            //MongoDB has its own Model
-            $log = new DBLogMongoDB($this->connection, $this->collection);
-        }
-        else {
-            //Use the default Laravel Eloquent Model
-            $log = new DBLog($this->connection, $this->collection);
-        }
-
-        if (isset($record['message'])) {
-            $log->message = $record['message'];
-        }
-        if ($this->detailed) {
-            if (isset($record['context'])) {
-                if (!empty($record['context'])) {
-                    $log->context = $record['context'];
-                }
-            }
-        }
-        if (isset($record['level'])) {
-            $log->level = $record['level'];
-        }
-        if (isset($record['level_name'])) {
-            $log->level_name = $record['level_name'];
-        }
-        if (isset($record['channel'])) {
-            $log->channel = $record['channel'];
-        }
-        if (isset($record['datetime'])) {
-            $log->datetime = $record['datetime'];
-        }
-        if (isset($record['extra'])) {
-            if (!empty($record['extra'])) {
-                $log->extra = $record['extra'];
-            }
-        }
-        $log->unix_time = time();
-
         if (!empty($this->connection)) {
             if (!empty($this->saveWithQueue)) {
                 try {
-                    if (dispatch(new SaveNewLogEvent($log))->onQueue($this->saveWithQueue)) {
-                        if (!empty($this->maxRows)) {
-                            $this->removeOldestIfMaxRows();
-                        }
-                    }
+                    dispatch(new SaveNewLogEvent($this, $record));
                 } catch (\Exception $e) {
                 }
             } else {
                 try {
+                    if ($this->database['driver'] === 'mongodb') {
+                        //MongoDB has its own Model
+                        $log = CreateLogFromRecord::generate($record,
+                            new DBLogMongoDB($this->connection, $this->collection),
+                            $this->detailed
+                        );
+                    }
+                    else {
+                        //Use the default Laravel Eloquent Model
+                        $log = CreateLogFromRecord::generate($record,
+                            new DBLog($this->connection, $this->collection),
+                            $this->detailed
+                        );
+                    }
+
                     if ($log->save()) {
                         if (!empty($this->maxRows)) {
                             $this->removeOldestIfMaxRows();
@@ -246,7 +220,7 @@ class LogToDB
      *
      * @return bool success
      */
-    private function removeOldestIfMaxRows() {
+    public function removeOldestIfMaxRows() {
         $model = $this->model();
         $current = $model->count();
         if ($current > $this->maxRows) {
