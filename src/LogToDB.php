@@ -1,6 +1,7 @@
 <?php
 
 namespace danielme85\LaravelLogToDB;
+
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\Models\DBLog;
 use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
@@ -24,11 +25,6 @@ class LogToDB
      */
     public $detailed;
     /**
-     * Max number of allowed rows
-     * @var bool
-     */
-    public $maxRows;
-    /**
      * Connection reference in databases config.
      * @var string
      */
@@ -43,6 +39,16 @@ class LogToDB
      * @var mixed
      */
     public $saveWithQueue;
+
+    /**
+     * @var mixed
+     */
+    public $saveWithQueueName;
+
+    /**
+     * @var mixed
+     */
+    public $saveWithQueueConnection;
 
     /**
      * The DB config details
@@ -78,6 +84,12 @@ class LogToDB
             if (isset($config['queue_db_saves'])) {
                 $this->saveWithQueue = $config['queue_db_saves'];
             }
+            if (isset($config['queue_db_name'])) {
+                $this->saveWithQueueName = $config['queue_db_name'];
+            }
+            if (isset($config['queue_db_connection'])) {
+                $this->saveWithQueueConnection = $config['queue_db_connection'];
+            }
         }
 
         //Set config based on specified config from the Log handler
@@ -104,17 +116,23 @@ class LogToDB
         }
 
         //set the actual connection instead of default
-        if ($this->connection === 'default') {
+        if ($this->connection === 'default' or empty($this->connection)) {
             $this->connection = config('database.default');
         }
-
         if (isset($dbconfig[$this->connection])) {
             $this->database = $dbconfig[$this->connection];
         }
-
         if (empty($this->database)) {
             new \ErrorException("Required configs missing: The LogToDB class needs a database correctly setup in the configs: databases.php and logtodb.php");
         }
+
+        //If the string 'default' is set for queue connection, then set null as this defaults to 'default' anyways.
+        if ($this->saveWithQueue) {
+            if ($this->saveWithQueueConnection === 'default') {
+                $this->saveWithQueueConnection = null;
+            }
+        }
+
     }
 
     /**
@@ -126,7 +144,7 @@ class LogToDB
      *
      * @return DBLog|DBLogMongoDB
      */
-    public static function model(string $channel = null, string $connection = null, string $collection = null)
+    public static function model(string $channel = null, string $connection = 'default', string $collection = null)
     {
         $conn = null;
         $coll = null;
@@ -141,8 +159,7 @@ class LogToDB
                     $coll = $channels[$channel]['collection'];
                 }
             }
-        }
-        else {
+        } else {
             if (!empty($connection)) {
                 $conn = $connection;
             }
@@ -160,14 +177,20 @@ class LogToDB
     /**
      * @return DBLogMongoDB | DBLog;
      */
-    private function getModel() {
+    private function getModel()
+    {
         if ($this->database['driver'] === 'mongodb') {
             //MongoDB has its own Model
-            return new DBLogMongoDB($this->connection, $this->collection);
-        }
-        else {
+            $mongo = new DBLogMongoDB();
+            $mongo->bind($this->connection, $this->collection);
+
+            return $mongo;
+        } else {
             //Use the default Laravel Eloquent Model
-            return new DBLog($this->connection, $this->collection);
+            $sql = new DBLog();
+            $sql->bind($this->connection, $this->collection);
+
+            return $sql;
         }
     }
 
@@ -175,62 +198,41 @@ class LogToDB
      * Create a Eloquent Model
      *
      * @param $record
-     * @return LogToDb self
-     */
-    public function newFromMonolog(array $record) : self
-    {
-        if (!empty($this->connection)) {
-            if (!empty($this->saveWithQueue)) {
-                try {
-                    dispatch(new SaveNewLogEvent($this, $record));
-                } catch (\Exception $e) {
-                }
-            } else {
-                try {
-                    if ($this->database['driver'] === 'mongodb') {
-                        //MongoDB has its own Model
-                        $log = CreateLogFromRecord::generate($record,
-                            new DBLogMongoDB($this->connection, $this->collection),
-                            $this->detailed
-                        );
-                    }
-                    else {
-                        //Use the default Laravel Eloquent Model
-                        $log = CreateLogFromRecord::generate($record,
-                            new DBLog($this->connection, $this->collection),
-                            $this->detailed
-                        );
-                    }
-
-                    if ($log->save()) {
-                        if (!empty($this->maxRows)) {
-                            $this->removeOldestIfMaxRows();
-                        }
-                    }
-                } catch (\Exception $e) {
-                }
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Delete the oldest record based on unix_time
-     *
      * @return bool success
      */
-    public function removeOldestIfMaxRows() {
-        $model = $this->model();
-        $current = $model->count();
-        if ($current > $this->maxRows) {
-            $oldest = $model->orderBy('unix_time', 'ASC')->first();
-            if ($oldest->delete()) {
-                return true;
+    public function newFromMonolog(array $record)
+    {
+        if (!empty($this->connection)) {
+            if ($this->saveWithQueue) {
+                if (empty($this->saveWithQueueName) and empty($this->saveWithQueueConnection)) {
+                    dispatch(new SaveNewLogEvent($this, $record));
+                } else if (!empty($this->saveWithQueueName) and !empty($this->saveWithQueueConnection)) {
+                    dispatch(new SaveNewLogEvent($this, $record))
+                        ->onConnection($this->saveWithQueueConnection)
+                        ->onQueue($this->saveWithQueueName);
+                } else if (!empty($this->saveWithQueueConnection)) {
+                    dispatch(new SaveNewLogEvent($this, $record)
+                    )->onConnection($this->saveWithQueueConnection);
+                } else if (!empty($this->saveWithQueueName)) {
+                    dispatch(new SaveNewLogEvent($this, $record))
+                        ->onQueue($this->saveWithQueueName);
+                }
+            } else {
+                $log = CreateLogFromRecord::generate(
+                    $this->connection,
+                    $this->collection,
+                    $record,
+                    $this->detailed,
+                    $this->database['driver'] ?? null
+                );
+
+                if ($log->save()) {
+
+                    return true;
+                }
             }
         }
 
         return false;
     }
-
 }

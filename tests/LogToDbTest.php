@@ -116,12 +116,12 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         Log::emergency("This is an test EMERGENCY log event");
 
         //Check mysql
-        $logReader = LogToDB::model()::all()->toArray();
-        $logReaderMongoDB = LogToDB::model('mongodb')::all()->toArray();
-        $this->assertNotEmpty($logReader);
-        $this->assertNotEmpty($logReaderMongoDB);
+        $logReader = LogToDB::model()->get()->toArray();
+        $logReaderMongoDB = LogToDB::model('mongodb')->get()->toArray();
+        $logReaderSpecific = LogToDB::model('database', 'mysql', 'log')->get()->toArray();
         $this->assertCount(8, $logReader);
         $this->assertCount(8, $logReaderMongoDB);
+        $this->assertCount(8, $logReaderSpecific);
     }
 
     public function testLoggingToChannels() {
@@ -132,13 +132,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         //Test limited config, with limited rows and level
         Log::channel('limited')->warning("This message should be stored because WARNING = WARNING");
         $this->assertNotEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'WARNING')->get()->toArray());
-    }
-
-    public function testMaxRows() {
-        for ($i = 1; $i <= 20; $i++) {
-            Log::channel('limited')->warning("Testing max rows: $i");
-        }
-        $this->assertLessThan(11, count(LogToDB::model('limited')->all()->toArray()));
     }
 
     public function testException() {
@@ -162,15 +155,36 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         Log::debug("I'm supposed to be added to the queue...");
 
         Queue::assertPushed(SaveNewLogEvent::class, 6);
+
+        config()->set('logtodb.queue_db_queue', 'logHandler');
+        config()->set('logtodb.queue_db_connection', 'default');
+
+        Log::info("I'm supposed to be added to the queue...");
+        Log::warning("I'm supposed to be added to the queue...");
+        Log::debug("I'm supposed to be added to the queue...");
+
+        Queue::assertPushed(SaveNewLogEvent::class, 12);
+    }
+
+    /**
+     * @group cleanup
+     *
+     */
+    public function testRemoves() {
+        $this->assertTrue(LogToDB::model()->removeOldestIfMoreThen(1));
+        $this->assertFalse(LogToDB::model()->removeOlderThen(date('Y-m-d')));
+
+        $this->assertTrue(LogToDB::model('mongodb')->removeOldestIfMoreThen(1));
+        $this->assertFalse(LogToDB::model('mongodb')->removeOlderThen(date('Y-m-d')));
     }
 
     public function testCleanup() {
-        LogToDB::model()::truncate();
-        LogToDB::model('mongodb')::truncate();
+        LogToDB::model()->truncate();
+        LogToDB::model('mongodb')->truncate();
 
-        $this->assertEmpty(LogToDB::model()::all()->toArray());
-        $this->assertEmpty(LogToDB::model('mongodb')::all()->toArray());
-        $this->assertEmpty(LogToDB::model('limited')::all()->toArray());
-        $this->assertEmpty(LogToDB::model('database')::all()->toArray());
+        $this->assertEmpty(LogToDB::model()->get()->toArray());
+        $this->assertEmpty(LogToDB::model('mongodb')->get()->toArray());
+        $this->assertEmpty(LogToDB::model('limited')->get()->toArray());
+        $this->assertEmpty(LogToDB::model('database')->get()->toArray());
     }
 }

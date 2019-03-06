@@ -2,18 +2,15 @@
 
 namespace danielme85\LaravelLogToDB\Jobs;
 
-use danielme85\LaravelLogToDB\Models\DBLog;
-use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
 use danielme85\LaravelLogToDB\Models\CreateLogFromRecord;
 use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
 class SaveNewLogEvent implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable;
 
     protected $logToDb;
     protected $record;
@@ -38,26 +35,14 @@ class SaveNewLogEvent implements ShouldQueue
      */
     public function handle()
     {
+        $log = CreateLogFromRecord::generate(
+            $this->logToDb->connection,
+            $this->logToDb->collection,
+            $this->record,
+            $this->logToDb->detailed,
+            $this->logToDb->database['driver'] ?? null
+        );
 
-        if ($this->logToDb->database['driver'] === 'mongodb') {
-            //MongoDB has its own Model
-            $log = CreateLogFromRecord::generate($this->record,
-                new DBLogMongoDB($this->logToDb->connection, $this->logToDb->collection),
-                $this->logToDb->detailed
-            );
-        }
-        else {
-            //Use the default Laravel Eloquent Model
-            $log = CreateLogFromRecord::generate($this->record,
-                new DBLog($this->logToDb->connection, $this->logToDb->collection),
-                $this->logToDb->detailed
-            );
-        }
-
-        if ($log->save()) {
-            if (!empty($this->logToDb->maxRows)) {
-                $this->logToDb->removeOldestIfMaxRows();
-            }
-        }
+        $log->save();
     }
 }

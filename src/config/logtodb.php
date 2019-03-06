@@ -29,7 +29,7 @@ return [
     | https://github.com/jenssegers/laravel-mongodb
     | laravel-mongodb is required to use the mongodb option for logging.
     */
-    'connection' => 'default',
+    'connection' => env('LOG_DB_CONNECTION', ''),
 
     /*
     |--------------------------------------------------------------------------
@@ -38,7 +38,7 @@ return [
     |
     | Set the default database collection/table to use.
     */
-    'collection' => 'log',
+    'collection' => env('LOG_DB_COLLECTION', 'log'),
 
     /*
     |--------------------------------------------------------------------------
@@ -50,29 +50,43 @@ return [
     | only useful in development/debugging. You can still have this enabled in production
     | environments if more detailed error logs are proffered.
     */
-    'detailed' => true,
+    'detailed' => env('LOG_DB_DETAILED', true),
 
     /*
     |--------------------------------------------------------------------------
-    | Max number of rows/objects
+    | Enable Queue
     |--------------------------------------------------------------------------
     |
-    | Set the max number of rows/objects to store in DB. Might be useful to keep
-    | DB storage size lower or as a handy automatic way to purge old log events.
-    | 'max_rows' => false for no limit.
+    | It might be a good idea to save log events with the queue helper.
+    | This way the requests going to your sever does not have to wait for the Log
+    | event to be saved.
+    | https://laravel.com/docs/5.7/queues#running-the-queue-worker
     */
-    'max_rows' => false,
+    'queue_db_saves' => env('LOG_DB_QUEUE', false),
 
     /*
     |--------------------------------------------------------------------------
     | Name of Queue
     |--------------------------------------------------------------------------
     |
-    | It might be a good idea to save log events with the queue helper.
-    | This way the requests going to your sever does not have to wait for the Log
-    | event to be saved. Set to a string like: 'queue_db_saves' => 'logWorker',
-    | and make sure to run the queue worker.
-    | https://laravel.com/docs/5.6/queues#running-the-queue-worker
+    | Set to a string like: 'queue_db_name' => 'logWorker',
+    | and make sure to run the queue worker. Leave empty for default queue.
+    | https://laravel.com/docs/5.7/queues#customizing-the-queue-and-connections
     */
-    'queue_db_saves' => false,
+    'queue_db_name' => env('LOG_DB_QUEUE_NAME', ''),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Queue Connection
+    |--------------------------------------------------------------------------
+    |
+    | If you are working with multiple queue connections, you may specify which
+    | connection to push a job to.
+    | This relates yto your queue settings in the config/queue.php file.
+    | Leave blank to use the default connection.
+    |
+    | https://laravel.com/docs/5.7/queues#customizing-the-queue-and-connection
+    */
+    'queue_db_connection' => env('LOG_DB_QUEUE_CONNECTION', ''),
+
 ];

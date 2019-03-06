@@ -12,13 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 class DBLog extends Model
 {
     use LogToDbCreateObject;
+    use BindsDynamically;
 
-    protected $connection;
-    protected $table;
-
-    function __construct($connection = 'mysql', $table = 'log')
-    {
-        $this->connection = $connection;
-        $this->table = $table;
-    }
 }

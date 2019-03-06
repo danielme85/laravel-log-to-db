@@ -26,7 +26,9 @@ class LogToDbHandler
                     $config['connection'] ?? null,
                     $config['collection'] ?? null,
                     $config['detailed'] ?? null,
-                    $config['max_rows'] ??  null,
+                    $config['queue'] ?? null,
+                    $config['queue_name'] ?? null,
+                    $config['queue_connection'] ?? null,
                     $config['level'] ?? null)
             ],
             [

@@ -31,7 +31,9 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
     'connection' => 'default',
     'collection' => 'log',
     'detailed' => true,
-    'max_rows' => false
+    'queue' => ''
+    'queue_name' => ''
+    'queue_connection' => ''
 ]
 ```
  * driver = Required to trigger the log driver.
@@ -41,7 +43,6 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
  * connection = The DB connection from config/database.php to use (default: 'default').
  * collection = The DB table or collection name. (Default: log).
  * detailed = Store detailed log on Exceptions like stack-trace (default: true).
- * max_rows = The number of rows/objects to allow before automatically removing the oldest (default: false).
  
 More info about some of these options: https://laravel.com/docs/5.6/logging#customizing-monolog-for-channels
 
@@ -50,6 +51,16 @@ This could be copied to your project if you would like edit it with the vendor p
 ```
 php artisan vendor:publish
 ```
+You can also set log-to-db config settings in your .env file, for ex:
+```
+LOG_DB_CONNECTION='default'
+LOG_DB_DETAILED=false
+LOG_DB_MAX=100
+LOG_DB_QUEUE=false
+LOG_DB_QUEUE_NAME='logToDBQueue'
+LOG_DB_QUEUE_CONNECTION='default'
+
+## Usage
 Use the default Laravel Facade "Log"
 ```php
 Log::channel()->info("This thing just happened");
@@ -84,8 +95,8 @@ $model->all(); //All logs for defualt channel/connection
 
 Some more examples of getting logs
 ```php
-$logs = LogToDB::model()->all();
-$logs = LogToDB::model()->where('id' = $id)->first();
+$logs = LogToDB::model()->get();
+$logs = LogToDB::model()->where('level_name', '=', 'INFO')->get();
 ```
 
 When getting logs for specific channel or DB connection and collection you can either use the channel name matching 
@@ -96,6 +107,47 @@ $logsFromDefault = LogDB::model()->all();
 $logsFromChannel = LogDB::model('database')->all();
 $logsFromMysql   = LogToDB::model(null, 'mysql')->all();
 $logsFromMongoDB = LogToDB::model(null, 'mongodb', 'log')->all();
+```
+
+##### Custom Model
+Since Laravel is supposed to use static defined collection/table names, 
+it might be best to use your own model in your app for a more solid approach.
+<br>
+https://laravel.com/docs/5.7/eloquent#eloquent-model-conventions
+
+```php
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Log extends Model
+{
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'log';
+    protected $connection = 'mysq;'
+}
+```
+Fetching the model trough the LogToDB class (like the examples above) might have some side-effects as tables and connections are 
+declared dynamically... aka made by Hackermann!
+<br>
+![](hackerman.gif)
+
+
+#### Log Cleanup
+There is a helper function to remove the oldest log events and keep a specified number
+```php
+LogToDB::removeOldestIfMoreThen(100);
+```
+Or based on date (most be valid date/datetime supported by strtotime())
+http://php.net/manual/en/function.strtotime.php
+
+```php
+LogToDB::removeOlderThen('2019-01-01');
+LogToDB::removeOlderThen('2019-01-01 23:00:00');
 ```
 
 ##### Advanced /config/logging.php example
@@ -114,6 +166,10 @@ $logsFromMongoDB = LogToDB::model(null, 'mongodb', 'log')->all();
         'level' => env('APP_LOG_LEVEL', 'debug'),
         'connection' => 'default',
         'collection' => 'log'
+        'detailed; => true,
+        'queue' => true
+        'queue_name' => 'logQueue'
+        'queue_connection' => 'redis'
     ],
     
     'mongodb' => [

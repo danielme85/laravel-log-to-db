@@ -154,4 +154,44 @@ trait LogToDbCreateObject
         return $value;
     }
 
+    /**
+     * Delete the oldest records based on unix_time
+     *
+     * @param int $max
+     * @return bool success
+     */
+    public function removeOldestIfMoreThen(int $max)
+    {
+        $current = $this->count();
+        if ($current > $max) {
+            $keepers = $this->orderBy('unix_time', 'DESC')->take($max)->pluck('id')->toArray();
+            if ($this->whereNotIn('id', $keepers)->get()->each->delete()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Delete records based on date.
+     *
+     * @param string $datetime date supported by strtotime: http://php.net/manual/en/function.strtotime.php
+     * @return bool success
+     */
+    public function removeOlderThen(string $datetime)
+    {
+        $unixtime = strtotime($datetime);
+
+        $keepers = $this->where('unix_time', '>=', $unixtime)->pluck('id')->toArray();
+        $deletes = $this->whereNotIn('id', $keepers)->get();
+        if (!$deletes->isEmpty()){
+            if ($deletes->each->delete()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
