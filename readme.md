@@ -90,7 +90,7 @@ LogToDB::model($channel, $connection, $collection);
 You can skip all function variables and the default settings from the config/logtodb.php will be used.
 ```php
 $model = LogToDB::model();
-$model->all(); //All logs for defualt channel/connection
+$model->get(); //All logs for defualt channel/connection
 ```
 
 Some more examples of getting logs
@@ -103,10 +103,10 @@ When getting logs for specific channel or DB connection and collection you can e
 config/logging.php or connection name from config/databases.php. You can also specify collection/table name if needed as 
 the third function variable when fetching the model.  
 ```php
-$logsFromDefault = LogDB::model()->all();
-$logsFromChannel = LogDB::model('database')->all();
-$logsFromMysql   = LogToDB::model(null, 'mysql')->all();
-$logsFromMongoDB = LogToDB::model(null, 'mongodb', 'log')->all();
+$logsFromDefault = LogDB::model()->get();
+$logsFromChannel = LogDB::model('database')->get();
+$logsFromMysql   = LogToDB::model(null, 'mysql')->get();
+$logsFromMongoDB = LogToDB::model(null, 'mongodb', 'log')->get();
 ```
 
 ##### Custom Model
@@ -132,11 +132,32 @@ class Log extends Model
 }
 ```
 Fetching the model trough the LogToDB class (like the examples above) might have some side-effects as tables and connections are 
-declared dynamically... aka made by Hackermann!
+declared dynamically... aka made by Hackerman!
 <br>
 ![](hackerman.gif)
 
+#### Adding tables/expanding collections 
+The Log handler for SQL expects the following schema:
+```php
+Schema::create('log', function (Blueprint $table) {
+      $table->increments('id');
+      $table->text('message')->nullable();
+      $table->string('channel')->nullable();
+      $table->integer('level')->default(0);
+      $table->string('level_name', 20);
+      $table->integer('unix_time');
+      $table->text('datetime')->nullable();
+      $table->longText('context')->nullable();
+      $table->text('extra')->nullable();
+      $table->timestamps();
+ });
+```
+This is the migration that ships with this plugin. You can add as many tables as you want, and reference them in the 'collection' config value. 
+Collection = table, I used the term collection as it works for both SQL/noSQL. 
+No migrations needed for MongoDB.
 
+No indexes are added per default, so if you fetch a lot of log results based on specific time ranges or types: it might be a good idea to add some indexes. 
+ 
 #### Log Cleanup
 There is a helper function to remove the oldest log events and keep a specified number
 ```php
@@ -166,7 +187,7 @@ LogToDB::removeOlderThen('2019-01-01 23:00:00');
         'level' => env('APP_LOG_LEVEL', 'debug'),
         'connection' => 'default',
         'collection' => 'log'
-        'detailed; => true,
+        'detailed' => true,
         'queue' => true
         'queue_name' => 'logQueue'
         'queue_connection' => 'redis'
