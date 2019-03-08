@@ -31,8 +31,8 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
     'connection' => 'default',
     'collection' => 'log',
     'detailed' => true,
-    'queue' => false
-    'queue_name' => ''
+    'queue' => false,
+    'queue_name' => '',
     'queue_connection' => ''
 ]
 ```
