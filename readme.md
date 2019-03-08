@@ -178,8 +178,8 @@ Or based on date (most be valid date/datetime supported by strtotime())
 http://php.net/manual/en/function.strtotime.php
 
 ```php
-LogToDB::removeOlderThen('2019-01-01');
-LogToDB::removeOlderThen('2019-01-01 23:00:00');
+LogToDB::model()->removeOlderThen('2019-01-01');
+LogToDB::model()->removeOlderThen('2019-01-01 23:00:00');
 ```
 
 ##### Advanced /config/logging.php example

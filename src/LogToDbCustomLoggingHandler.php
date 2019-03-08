@@ -78,8 +78,11 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
         if (!empty($collection)) {
             $this->saveWithQueue = $enableQueue;
         }
-        if (!empty($detailed)) {
+        if (!empty($enableQueue)) {
             $this->saveWithQueueName = $queueName;
+        }
+        if (!empty($queueConnection)) {
+            $this->saveWithQueueConnection = $queueConnection;
         }
 
         parent::__construct($level, $bubble);
@@ -94,7 +97,12 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
     {
         if (!empty($record)) {
             try {
-                $log = new LogToDB($this->connection, $this->collection, $this->detailed, $this->maxRows);
+                $log = new LogToDB($this->connection,
+                    $this->collection,
+                    $this->detailed,
+                    $this->saveWithQueue,
+                    $this->saveWithQueueName,
+                    $this->saveWithQueueConnection);
                 $log->newFromMonolog($record);
             } catch (\Exception $e) {
 

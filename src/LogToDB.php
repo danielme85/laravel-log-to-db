@@ -59,12 +59,19 @@ class LogToDB
     /**
      * LogToDB constructor.
      *
-     * @param null $channelConnection
-     * @param null $collection
-     * @param null $detailed
-     * @param null $maxRows
+     * @param string|null $channelConnection
+     * @param string|null $collection
+     * @param bool|null $detailed
+     * @param bool|null $queue
+     * @param string|null $queueName
+     * @param string|null $queueConnection
      */
-    function __construct($channelConnection = null, $collection = null, $detailed = null, $maxRows = null)
+    function __construct(string $channelConnection = null,
+                         string $collection = null,
+                         bool $detailed = null,
+                         bool $queue = null,
+                         string $queueName = null,
+                         string $queueConnection = null)
     {
         //Log default config if present
         $config = config('logtodb');
@@ -102,8 +109,14 @@ class LogToDB
         if (!empty($detailed)) {
             $this->detailed = $detailed;
         }
-        if (!empty($maxRows)) {
-            $this->maxRows = (int)$maxRows;
+        if (!empty($queue)) {
+            $this->saveWithQueue = $queue;
+        }
+        if (!empty($queueName)) {
+            $this->saveWithQueueName = $queueName;
+        }
+        if (!empty($queueConnection)) {
+            $this->saveWithQueueConnection = $queueConnection;
         }
 
         //Get the DB connections
