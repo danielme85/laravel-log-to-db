@@ -31,7 +31,7 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
     'connection' => 'default',
     'collection' => 'log',
     'detailed' => true,
-    'queue' => ''
+    'queue' => false
     'queue_name' => ''
     'queue_connection' => ''
 ]
@@ -51,7 +51,7 @@ This could be copied to your project if you would like edit it with the vendor p
 ```
 php artisan vendor:publish
 ```
-You can also set log-to-db config settings in your .env file, for ex:
+You can also set default log-to-db config settings in your .env file, for ex:
 ```
 LOG_DB_CONNECTION='default'
 LOG_DB_DETAILED=false
@@ -75,10 +75,21 @@ Log::channel('mongodb')->info("This thing just happened");
 This logger works the same as any other across Laravel, for example you can add it to a stack. 
 You can log multiple levels to multiple DB connections... the possibilities are ENDLESS! 😎
 
-#### Log Worker Queue
+#### Config priority order
+Lowest number has highest priority (overrides the one below);
+1. Log Channel config array in config/logging.php overrides logtodb.php
+2. .env File overrides config/logtodb.php file
+3. config/logtodb.php is the default config.
+
+### Log Worker Queue
 It might be a good idea to save the log events with a Queue Worker. This way your server does not have to wait for
 the save process to finish. You would have to configure the Laravel Queue settings and run the Queue listener. 
 https://laravel.com/docs/5.6/queues#running-the-queue-worker
+
+The queue can be enabled/disabled in any of the following places:  
+* LOG_DB_QUEUE = true | in .env
+* queue_db_saves => true | in config/logtodb.php
+* queue => true | in the log channel config array -> config/logging.php
 
 ## Usage
 Since this is a custom log channel for Laravel, all "standard" ways of generating log events etc should work with 
