@@ -101,7 +101,7 @@ LogToDB::model($channel, $connection, $collection);
 You can skip all function variables and the default settings from the config/logtodb.php will be used.
 ```php
 $model = LogToDB::model();
-$model->get(); //All logs for defualt channel/connection
+$model->get(); //All logs for default channel/connection
 ```
 
 Some more examples of getting logs
