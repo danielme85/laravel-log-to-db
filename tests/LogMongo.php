@@ -16,6 +16,6 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class LogMongo extends Eloquent
 {
-    protected $collection = 'logs';
+    protected $collection = 'log';
 
 }

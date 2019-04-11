@@ -62,14 +62,14 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
                 'level' =>  'debug',
                 'connection' => 'default',
-                'collection' => 'LogSql'
+                'collection' => 'log'
             ],
             'mongodb' => [
                 'driver' => 'custom',
                 'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
                 'level' => 'debug',
                 'connection' => 'mongodb',
-                'collection' => 'LogSql'
+                'collection' => 'log'
             ],
             'limited' => [
                 'driver' => 'custom',

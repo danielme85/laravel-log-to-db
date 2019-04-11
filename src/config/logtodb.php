@@ -38,7 +38,7 @@ return [
     |
     | Set the default database collection/table to use.
     */
-    'collection' => env('LOG_DB_COLLECTION', 'LogSql'),
+    'collection' => env('LOG_DB_COLLECTION', 'log'),
 
     /*
     |--------------------------------------------------------------------------

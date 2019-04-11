@@ -13,7 +13,7 @@ class CreateLogTable extends Migration
      */
     public function up()
     {
-        Schema::create('LogSql', function (Blueprint $table) {
+        Schema::create('log', function (Blueprint $table) {
             $table->increments('id');
             $table->text('message')->nullable();
             $table->string('channel')->nullable();
@@ -34,6 +34,6 @@ class CreateLogTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('LogSql');
+        Schema::dropIfExists('log');
     }
 }

@@ -16,6 +16,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class LogSql extends Model
 {
-    protected $table = 'logs';
+    protected $table = 'log';
 
 }
