@@ -17,5 +17,6 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 class LogMongo extends Eloquent
 {
     protected $collection = 'log';
+    protected $connection = 'mongodb';
 
 }

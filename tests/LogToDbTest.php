@@ -48,8 +48,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                     'options'  => [
                         //'database' => 'admin' // sets the authentication database required by mongo 3
                     ]
-                ],]
-        );
+                ],
+            ]);
 
         $app['config']->set('logging.default', 'stack');
         $app['config']->set('logging.channels', [
@@ -193,23 +193,71 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testModelInteraction() {
         $model = LogToDB::model();
-
         //Get all
         $all = $model->get();
         $this->assertNotEmpty($all->toArray());
-
         //Get Debug
-        $logs = $model->where('level_name', '=', 'DEBUG')->get();
-        $this->assertNotEmpty($logs->toArray());
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
 
-        $modelMongo = LogToDB::model(null, 'mongodb', 'LogSql');
+        $model = LogToDB::model('database');
+        //Get all
+        $all = $model->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        $model = LogToDB::model(null, 'mysql');
+        //Get all
+        $all = $model->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        $model = LogToDB::model('database', 'mysql', 'log');
+        //Get all
+        $all = $model->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        //Same tests for mongoDB
+        $modelMongo = LogToDB::model('mongodb');
         //Get all
         $all = $modelMongo->get();
         $this->assertNotEmpty($all->toArray());
-
         //Get Debug
-        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get();
-        $this->assertNotEmpty($logs->toArray());
+        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        //Same tests for mongoDB
+        $modelMongo = LogToDB::model('mongodb', 'mongodb', 'log');
+        //Get all
+        $all = $modelMongo->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        //Same tests for mongoDB
+        $modelMongo = LogToDB::model(null, 'mongodb');
+        //Get all
+        $all = $modelMongo->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
     }
 
     public function testStandAloneModels() {
