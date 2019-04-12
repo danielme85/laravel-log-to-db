@@ -23,17 +23,25 @@ php artisan migrate
 Starting with Laravel 5.6 you will have a new settings file: "config/logging.php". 
 You will need to add an array under 'channels' for Log-to-DB here like so:
 ```php
-'database' => [
-    'driver' => 'custom',
-    'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
-    'level' => env('APP_LOG_LEVEL', 'debug'),
-    'name' => 'My DB Log',
-    'connection' => 'default',
-    'collection' => 'log',
-    'detailed' => true,
-    'queue' => false,
-    'queue_name' => '',
-    'queue_connection' => ''
+'channels' => [
+    'stack' => [
+        'driver' => 'stack',
+        'channels' => ['database', 'mongodb'],
+    ],
+    
+    'database' => [
+        'driver' => 'custom',
+        'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+        'level' => env('APP_LOG_LEVEL', 'debug'),
+        'name' => 'My DB Log',
+        'connection' => 'default',
+        'collection' => 'log',
+        'detailed' => true,
+        'queue' => false,
+        'queue_name' => '',
+        'queue_connection' => ''
+    ],
+    ...
 ]
 ```
  * driver = Required to trigger the log driver.
@@ -94,14 +102,27 @@ The queue can be enabled/disabled in any of the following places:
 ## Usage
 Since this is a custom log channel for Laravel, all "standard" ways of generating log events etc should work with 
 the Laravel Log Facade. See https://laravel.com/docs/5.6/logging for more information.
+```php
+Log::debug("This is an test DEBUG log event");
+Log::info("This is an test INFO log event");
+Log::notice("This is an test NOTICE log event");
+Log::warning("This is an test WARNING log event");
+Log::error("This is an test ERROR log event");
+Log::critical("This is an test CRITICAL log event");
+Log::alert("This is an test ALERT log event");
+Log::emergency("This is an test EMERGENCY log event");
+```
+You can also log to specific log channels:
+Log::channel('database')debug("This is an test DEBUG log event");
 
-#### Fetching Logs
+
+### Fetching Logs
 The logging by this channel is done trough the Eloquent Model builder.
 LogToDB::model($channel, $connection, $collection);
 You can skip all function variables and the default settings from the config/logtodb.php will be used.
 ```php
 $model = LogToDB::model();
-$model->get(); //All logs for defualt channel/connection
+$model->get(); //All logs for default channel/connection
 ```
 
 Some more examples of getting logs
@@ -114,18 +135,20 @@ When getting logs for specific channel or DB connection and collection you can e
 config/logging.php or connection name from config/databases.php. You can also specify collection/table name if needed as 
 the third function variable when fetching the model.  
 ```php
-$logsFromDefault = LogDB::model()->get();
-$logsFromChannel = LogDB::model('database')->get();
-$logsFromMysql   = LogToDB::model(null, 'mysql')->get();
-$logsFromMongoDB = LogToDB::model(null, 'mongodb', 'log')->get();
+$logsFromDefault = LogDB::model()->get(); //Get the logs from the default log channel and default connection.
+$logsFromChannel = LogDB::model('database')->get(); //Get logs from the 'database' log channel.
+$logsFromChannel = LogDB::model('customname')->get(); //Get logs from the 'customname' log channel.
+$logsFromMysql   = LogToDB::model(null, 'mysql')->get(); //Get all logs from the mysql connection (from Laravel database config)
+$logsFromMongoDB = LogToDB::model(null, 'mongodb')->get(); //Get all logs from the mongodb connection (from Laravel database config)
 ```
 
-##### Custom Model
+#### Add your own Model in your app
 Since Laravel is supposed to use static defined collection/table names, 
-it might be best to use your own model in your app for a more solid approach.
+it might be better to use your own model in your app for a more solid approach.
 <br>
 https://laravel.com/docs/5.7/eloquent#eloquent-model-conventions
 
+##### SQL
 ```php
 namespace App;
 
@@ -133,15 +156,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class Log extends Model
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'log';
-    protected $connection = 'mysq;'
+    protected $connection = 'mysql'
+    
 }
 ```
+
+##### MongoDB
+```php
+namespace App;
+
+use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+
+class LogMongo extends Eloquent
+{
+    protected $collection = 'log';
+    protected $connection = 'mongodb';
+
+}
+``` 
+
 Fetching the model trough the LogToDB class (like the examples above) might have some side-effects as tables and connections are 
 declared dynamically... aka made by Hackerman!
 <br>
@@ -182,7 +216,7 @@ LogToDB::model()->removeOlderThen('2019-01-01');
 LogToDB::model()->removeOlderThen('2019-01-01 23:00:00');
 ```
 
-##### Advanced /config/logging.php example
+#### Advanced /config/logging.php example
 ```php
 'default' => env('LOG_CHANNEL', 'stack'),
 
@@ -207,10 +241,23 @@ LogToDB::model()->removeOlderThen('2019-01-01 23:00:00');
     'mongodb' => [
         'driver' => 'custom',
         'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
-        'level' => env('APP_LOG_LEVEL', 'debug'),
+        'level' => 'debug',
         'connection' => 'mongodb',
-        'collection' => 'log'
+        'collection' => 'log',
+        'detailed' => true,
+        'queue' => true
+        'queue_name' => 'logQueue'
+        'queue_connection' => 'redis'
     ],
+    
+    'limited' => [
+        'driver' => 'custom',
+        'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+        'level' => 'warning',
+        'detailed' => false,
+        'max_rows' => 10,
+        'name' => 'limited',
+    ]
     
     'single' => [
         'driver' => 'single',

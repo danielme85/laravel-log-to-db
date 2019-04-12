@@ -48,8 +48,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                     'options'  => [
                         //'database' => 'admin' // sets the authentication database required by mongo 3
                     ]
-                ],]
-        );
+                ],
+            ]);
 
         $app['config']->set('logging.default', 'stack');
         $app['config']->set('logging.channels', [
@@ -100,11 +100,21 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         ];
     }
 
+    /**
+     * Basic test to see if class can be instanced.
+     *
+     * @group basic
+     */
     public function testClassInit() {
         $test = new LogToDB();
         $this->assertInstanceOf('danielme85\LaravelLogToDB\LogToDB', $test);
     }
 
+    /**
+     * Run basic log levels
+     *
+     * @group basic
+     */
     public function testLogLevels() {
         Log::debug("This is an test DEBUG log event");
         Log::info("This is an test INFO log event");
@@ -118,12 +128,17 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         //Check mysql
         $logReader = LogToDB::model()->get()->toArray();
         $logReaderMongoDB = LogToDB::model('mongodb')->get()->toArray();
-        $logReaderSpecific = LogToDB::model('database', 'mysql', 'log')->get()->toArray();
+        $logReaderSpecific = LogToDB::model('database', 'mysql', 'LogSql')->get()->toArray();
         $this->assertCount(8, $logReader);
         $this->assertCount(8, $logReaderMongoDB);
         $this->assertCount(8, $logReaderSpecific);
     }
 
+    /**
+     * Test logging to specific channels
+     *
+     * @group advanced
+     */
     public function testLoggingToChannels() {
         //Test limited config, with limited rows and level
         Log::channel('limited')->debug("This message should not be stored because DEBUG is LOWER then WARNING");
@@ -134,6 +149,11 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertNotEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'WARNING')->get()->toArray());
     }
 
+    /**
+     * Test an exception error.
+     *
+     * @group advanced
+     */
     public function testException() {
         $e = new Symfony\Component\HttpKernel\Exception\BadRequestHttpException("This is a fake 500 error", null, 500, ['fake-header' => 'value']);
         Log::warning("Error", ['exception' => $e, 'more' => 'infohere']);
@@ -142,8 +162,9 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     }
 
     /**
-     * @group queue
+     * Test queuing the log events.
      *
+     * @group queue
      */
     public function testQueue() {
         Queue::fake();
@@ -167,8 +188,87 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     }
 
     /**
-     * @group cleanup
      *
+     * @group model
+     */
+    public function testModelInteraction() {
+        $model = LogToDB::model();
+        //Get all
+        $all = $model->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        $model = LogToDB::model('database');
+        //Get all
+        $all = $model->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        $model = LogToDB::model(null, 'mysql');
+        //Get all
+        $all = $model->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        $model = LogToDB::model('database', 'mysql', 'log');
+        //Get all
+        $all = $model->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        //Same tests for mongoDB
+        $modelMongo = LogToDB::model('mongodb');
+        //Get all
+        $all = $modelMongo->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        //Same tests for mongoDB
+        $modelMongo = LogToDB::model('mongodb', 'mongodb', 'log');
+        //Get all
+        $all = $modelMongo->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+        //Same tests for mongoDB
+        $modelMongo = LogToDB::model(null, 'mongodb');
+        //Get all
+        $all = $modelMongo->get();
+        $this->assertNotEmpty($all->toArray());
+        //Get Debug
+        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+
+    }
+
+    public function testStandAloneModels() {
+        $this->assertNotEmpty(LogSql::get()->toArray());
+        $this->assertNotEmpty(LogMongo::get()->toArray());
+    }
+
+    /**
+     * Test the cleanup functions.
+     *
+     * @group cleanup
      */
     public function testRemoves() {
         $this->assertTrue(LogToDB::model()->removeOldestIfMoreThen(1));
@@ -178,6 +278,9 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertFalse(LogToDB::model('mongodb')->removeOlderThen(date('Y-m-d')));
     }
 
+    /**
+     * Clear all data from the test.
+     */
     public function testCleanup() {
         LogToDB::model()->truncate();
         LogToDB::model('mongodb')->truncate();
