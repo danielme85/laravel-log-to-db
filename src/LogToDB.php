@@ -85,9 +85,6 @@ class LogToDB
             if (isset($config['detailed'])) {
                 $this->detailed = $config['detailed'];
             }
-            if (isset($config['max_rows'])) {
-                $this->maxRows = (int)$config['max_rows'];
-            }
             if (isset($config['queue_db_saves'])) {
                 $this->saveWithQueue = $config['queue_db_saves'];
             }
