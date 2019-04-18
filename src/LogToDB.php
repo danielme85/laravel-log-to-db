@@ -214,6 +214,11 @@ class LogToDB
     {
         if (!empty($this->connection)) {
             if ($this->saveWithQueue) {
+                if (isset($record['context']['exception']) and !empty($record['context']['exception'])) {
+                    if (strpos(get_class($record['context']['exception']), "Exception") !== false) {
+                        dispatch_now(new SaveNewLogEvent($this, $record));
+                    }
+                }
                 if (empty($this->saveWithQueueName) and empty($this->saveWithQueueConnection)) {
                     dispatch(new SaveNewLogEvent($this, $record));
                 } else if (!empty($this->saveWithQueueName) and !empty($this->saveWithQueueConnection)) {
@@ -227,7 +232,7 @@ class LogToDB
                     dispatch(new SaveNewLogEvent($this, $record))
                         ->onQueue($this->saveWithQueueName);
                 }
-            } else {
+             } else {
                 $log = CreateLogFromRecord::generate(
                     $this->connection,
                     $this->collection,
