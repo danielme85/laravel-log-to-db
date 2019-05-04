@@ -52,7 +52,7 @@ trait LogToDbCreateObject
         if (isset($value['exception'])) {
             if (!empty($value['exception'])) {
                 $exception = $value['exception'];
-                if (strpos(get_class($exception), "\Exception") !== false) {
+                if (strpos(get_class($exception), "Exception") !== false) {
                     $newexception = [];
                     $newexception['class'] = get_class($exception);
                     if (method_exists($exception, 'getMessage')) {

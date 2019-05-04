@@ -20,20 +20,15 @@ class LogToDbHandler
      */
     public function __invoke(array $config)
     {
+        $processors = [
+            new IntrospectionProcessor()
+        ];
         return new Logger($config['name'] ?? 'LogToDB',
             [
-                new LogToDbCustomLoggingHandler(
-                    $config['connection'] ?? null,
-                    $config['collection'] ?? null,
-                    $config['detailed'] ?? null,
-                    $config['queue'] ?? null,
-                    $config['queue_name'] ?? null,
-                    $config['queue_connection'] ?? null,
-                    $config['level'] ?? null)
+                new LogToDbCustomLoggingHandler($config, $processors)
             ],
-            [
-                new IntrospectionProcessor()
-            ]);
+                $processors
+            );
     }
 
 }

@@ -25,6 +25,7 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
 ```php
 'channels' => [
     'stack' => [
+        'name' => 'Log Stack',
         'driver' => 'stack',
         'channels' => ['database', 'mongodb'],
     ],
@@ -47,7 +48,7 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
  * driver = Required to trigger the log driver.
  * via = The Log handler class.
  * level = The minimum error level to trigger this Log Channel.
- * name = The channel name that will be stored with the Log event.
+ * name = The channel name that will be stored with the Log event. Please note that if you use the stack driver the name value in the stack array is used.
  * connection = The DB connection from config/database.php to use (default: 'default').
  * collection = The DB table or collection name. (Default: log).
  * detailed = Store detailed log on Exceptions like stack-trace (default: true).
