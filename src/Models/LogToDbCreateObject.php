@@ -2,6 +2,8 @@
 
 namespace danielme85\LaravelLogToDB\Models;
 
+use Monolog\DateTimeImmutable;
+
 /**
  * Trait LogToDbCreateObject
  *
@@ -24,9 +26,9 @@ trait LogToDbCreateObject
      * DateTime Accessor
      *
      * @param $value
-     * @return \DateTime
+     * @return DateTimeImmutable
      */
-    public function getDatetimeAttribute($value) : \DateTime
+    public function getDatetimeAttribute($value) : DateTimeImmutable
     {
         return unserialize($value);
     }
@@ -108,9 +110,9 @@ trait LogToDbCreateObject
     /**
      * DateTime Mutator
      *
-     * @param \DateTime  $value
+     * @param DateTimeImmutable $value
      */
-    public function setDatetimeAttribute(\DateTime $value)
+    public function setDatetimeAttribute(DateTimeImmutable $value)
     {
         $this->attributes['datetime'] = serialize($value);
     }

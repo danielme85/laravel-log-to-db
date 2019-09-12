@@ -6,12 +6,22 @@
 [![Travis (.org)](https://img.shields.io/travis/danielme85/laravel-log-to-db.svg?style=flat-square)](https://travis-ci.org/danielme85/laravel-log-to-db)
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
 
-Custom Larvel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
+Custom Laravel 6/5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
 Uses Laravel native logging functionality.
 
 ## Installation
+For latest Laravel 6 Support
 ```
 require danielme85/laravel-log-to-db
+```
+
+For Laravel 5.6 -> 5.* Support you can either use the v1 branch or a v1 release, ex:
+```
+require danielme85/laravel-log-to-db:dev-v1
+```
+or
+```
+require danielme85/laravel-log-to-db "~1.1"
 ```
 
 If you are going to be using SQL database server to store log events you would need to run the migrations first. The MongoDB driver does not require the migration.
