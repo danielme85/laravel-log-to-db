@@ -3,7 +3,6 @@
 namespace danielme85\LaravelLogToDB;
 
 use Monolog\Logger;
-use Monolog\Processor\IntrospectionProcessor;
 
 /**
  * Class LogToDbHandler
@@ -20,9 +19,16 @@ class LogToDbHandler
      */
     public function __invoke(array $config)
     {
-        $processors = [
-            new IntrospectionProcessor()
-        ];
+        $processors = [];
+
+        if (isset($config['processors']) && !empty($config['processors']) && is_array($config['processors'])) {
+           foreach ($config['processors'] as $processorName) {
+               if (class_exists($processorName)) {
+                   $processors[] = new $processorName;
+               }
+           }
+        }
+
         return new Logger($config['name'] ?? 'LogToDB',
             [
                 new LogToDbCustomLoggingHandler($config, $processors)

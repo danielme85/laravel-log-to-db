@@ -5,6 +5,7 @@
 [![GitHub tag](https://img.shields.io/github/tag/danielme85/laravel-log-to-db.svg?style=flat-square)](https://github.com/danielme85/laravel-log-to-db)
 [![Travis (.org)](https://img.shields.io/travis/danielme85/laravel-log-to-db.svg?style=flat-square)](https://travis-ci.org/danielme85/laravel-log-to-db)
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
+[![CodeFactor](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db/badge)](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db)
 
 Custom Laravel 6/5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
 Uses Laravel native logging functionality.
@@ -50,7 +51,10 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
         'detailed' => true,
         'queue' => false,
         'queue_name' => '',
-        'queue_connection' => ''
+        'queue_connection' => '',
+        'processors' => [
+              //Monolog\Processor\HostnameProcessor::class
+         ]
     ],
     ...
 ]
@@ -62,6 +66,8 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
  * connection = The DB connection from config/database.php to use (default: 'default').
  * collection = The DB table or collection name. (Default: log).
  * detailed = Store detailed log on Exceptions like stack-trace (default: true).
+ * processors = Array of additional processors. These will add additional info into the 'extra' field in the logged data.
+[More information about processors](#processors)
  
 More info about some of these options: https://laravel.com/docs/5.6/logging#customizing-monolog-for-channels
 
@@ -225,6 +231,32 @@ http://php.net/manual/en/function.strtotime.php
 ```php
 LogToDB::model()->removeOlderThen('2019-01-01');
 LogToDB::model()->removeOlderThen('2019-01-01 23:00:00');
+```
+
+#### Processors
+Monolog ships with a set of [processors](https://github.com/Seldaek/monolog/tree/master/src/Monolog/Processor), these will generate additional data and populate the 'extra' field.
+
+You could also create your own custom processor, make sure they implement [Monolog\Processor\ProcessorInterface](https://github.com/Seldaek/monolog/blob/master/src/Monolog/Processor/ProcessorInterface.php).
+
+##### Example of custom processor
+```php
+<?php
+
+namespace App\CustomProcessors;
+
+use Monolog\Processor\ProcessorInterface;
+
+class PhpVersionProcessor implements ProcessorInterface {
+     /**
+     * @return array The processed record
+     */
+     public function __invoke(array $record) {
+         $record['extra']['php_version'] = phpversion();
+         
+         return $record;
+     }
+}
+
 ```
 
 #### Advanced /config/logging.php example

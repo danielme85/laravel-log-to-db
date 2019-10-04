@@ -3,7 +3,6 @@
 namespace danielme85\LaravelLogToDB;
 
 use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Logger;
 
 /**
  * Class LogToDbHandler
@@ -83,10 +82,8 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
             }
         }
 
-
         //Set the processors
-        if (!empty($processors))
-        {
+        if (!empty($processors)) {
             foreach ($processors as $processor) {
                 $this->pushProcessor($processor);
             }
@@ -112,7 +109,11 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
                     $this->saveWithQueueConnection);
                 $log->newFromMonolog($record);
             } catch (\Exception $e) {
-
+                //We want ignore this exception for (at least) two reasons:
+                //1. Let's not ruin the whole app/request/job whatever is supposed to happen
+                // by this log write operation failing.
+                //2. There is a potential for an infinate loop of this log writer failing,
+                // then trying to write a log about the log failing :(
             }
         }
     }

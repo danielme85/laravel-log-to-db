@@ -62,14 +62,21 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
                 'level' =>  'debug',
                 'connection' => 'default',
-                'collection' => 'log'
+                'collection' => 'log',
+                'processors' => [
+                    Monolog\Processor\HostnameProcessor::class,
+                    danielme85\LaravelLogToDB\Processors\PhpVersionProcessor::class
+                ]
             ],
             'mongodb' => [
                 'driver' => 'custom',
                 'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
                 'level' => 'debug',
                 'connection' => 'mongodb',
-                'collection' => 'log'
+                'collection' => 'log',
+                'processors' => [
+                    Monolog\Processor\HostnameProcessor::class
+                ]
             ],
             'limited' => [
                 'driver' => 'custom',
@@ -108,6 +115,10 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     public function testClassInit() {
         $test = new LogToDB();
         $this->assertInstanceOf('danielme85\LaravelLogToDB\LogToDB', $test);
+
+        //Class works, now let's cleanup possible failed test
+        LogToDB::model()->truncate();
+        LogToDB::model('mongodb')->truncate();
     }
 
     /**
@@ -132,6 +143,19 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertCount(8, $logReader);
         $this->assertCount(8, $logReaderMongoDB);
         $this->assertCount(8, $logReaderSpecific);
+    }
+
+    /**
+     * Check to see if processors are adding extra content.
+     *
+     * @group basic
+     */
+    public function testProcessors()
+    {
+        $log = LogToDB::model()->orderBy('created_at', 'desc')->first()->toArray();
+        $this->assertNotEmpty($log['extra']);
+        $this->assertNotEmpty($log['extra']['php_version']);
+        $this->assertNotEmpty($log['extra']['hostname']);
     }
 
     /**
@@ -188,6 +212,33 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     }
 
     /**
+     * Test save new log event job
+     *
+     * @group job
+     */
+    public function testSaveNewLogEventJob()
+    {
+        $logToDb = new LogToDB();
+        $record = [
+            'message' => 'job-test',
+            'context' => [],
+            'level' => 200,
+            'level_name' => 'INFO',
+            'channel' => 'local',
+            'datetime' => new Monolog\DateTimeImmutable(true),
+            'extra' => [],
+            'formatted' => "[2019-10-04T17:26:38.446827+00:00] local.INFO: test [] []\n"
+        ];
+
+        $job = new SaveNewLogEvent($logToDb, $record);
+        $job->handle();
+
+        $this->assertNotEmpty($logToDb->model()->where('message', '=', 'job-test')->get());
+    }
+
+
+    /**
+     * Test model interaction
      *
      * @group model
      */
