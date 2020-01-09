@@ -157,17 +157,28 @@ trait LogToDbCreateObject
     }
 
     /**
-     * Delete the oldest records based on unix_time
+     * Delete the oldest records based on unix_time, silly spelling version.
      *
-     * @param int $max
-     * @return bool success
+     * @param int $max amount of records to keep
+     * @return bool
      */
     public function removeOldestIfMoreThen(int $max)
     {
+        return $this->removeOldestIfMoreThan($max);
+    }
+
+    /**
+     * Delete the oldest records based on unix_time
+     *
+     * @param int $max amount of records to keep
+     * @return bool success
+     */
+    public function removeOldestIfMoreThan(int $max)
+    {
         $current = $this->count();
         if ($current > $max) {
-            $keepers = $this->orderBy('unix_time', 'DESC')->take($max)->pluck('id')->toArray();
-            if ($this->whereNotIn('id', $keepers)->get()->each->delete()) {
+            $keepers = $this->orderBy('unix_time', 'DESC')->take($max)->pluck($this->primaryKey)->toArray();
+            if ($this->whereNotIn($this->primaryKey, $keepers)->get()->each->delete()) {
                 return true;
             }
         }
@@ -176,17 +187,28 @@ trait LogToDbCreateObject
     }
 
     /**
-     * Delete records based on date.
+     * Delete records based on date, silly spelling version.
      *
      * @param string $datetime date supported by strtotime: http://php.net/manual/en/function.strtotime.php
      * @return bool success
      */
     public function removeOlderThen(string $datetime)
     {
+        return $this->removeOlderThan($datetime);
+    }
+
+    /**
+     * Delete records based on date.
+     *
+     * @param string $datetime date supported by strtotime: http://php.net/manual/en/function.strtotime.php
+     * @return bool success
+     */
+    public function removeOlderThan(string $datetime)
+    {
         $unixtime = strtotime($datetime);
 
-        $keepers = $this->where('unix_time', '>=', $unixtime)->pluck('id')->toArray();
-        $deletes = $this->whereNotIn('id', $keepers)->get();
+        $keepers = $this->where('unix_time', '>=', $unixtime)->pluck($this->primaryKey)->toArray();
+        $deletes = $this->whereNotIn($this->primaryKey, $keepers)->get();
         if (!$deletes->isEmpty()){
             if ($deletes->each->delete()) {
                 return true;
