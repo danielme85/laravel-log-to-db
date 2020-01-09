@@ -214,14 +214,14 @@ No indexes are added per default, so if you fetch a lot of log results based on 
 #### Log Cleanup
 There is a helper function to remove the oldest log events and keep a specified number
 ```php
-LogToDB::removeOldestIfMoreThen(100);
+LogToDB::removeOldestIfMoreThan(100);
 ```
 Or based on date (most be valid date/datetime supported by strtotime())
 http://php.net/manual/en/function.strtotime.php
 
 ```php
-LogToDB::model()->removeOlderThen('2019-01-01');
-LogToDB::model()->removeOlderThen('2019-01-01 23:00:00');
+LogToDB::model()->removeOlderThan('2019-01-01');
+LogToDB::model()->removeOlderThan('2019-01-01 23:00:00');
 ```
 
 #### Processors

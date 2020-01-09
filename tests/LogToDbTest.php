@@ -322,11 +322,44 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      * @group cleanup
      */
     public function testRemoves() {
-        $this->assertTrue(LogToDB::model()->removeOldestIfMoreThen(1));
-        $this->assertFalse(LogToDB::model()->removeOlderThen(date('Y-m-d')));
+        Log::debug("This is an test DEBUG log event");
+        Log::info("This is an test INFO log event");
+        Log::notice("This is an test NOTICE log event");
 
-        $this->assertTrue(LogToDB::model('mongodb')->removeOldestIfMoreThen(1));
-        $this->assertFalse(LogToDB::model('mongodb')->removeOlderThen(date('Y-m-d')));
+        //sleep to pass time for record cleanup testing based on time next.
+        sleep(1);
+
+        $this->assertTrue(LogToDB::model()->removeOldestIfMoreThan(2));
+        $this->assertEquals(2, LogToDB::model()->count());
+        $this->assertTrue(LogToDB::model()->removeOlderThan(date('Y-m-d H:i:s')));
+        $this->assertEquals(0, LogToDB::model()->count());
+
+        //Same tests on mongodb
+        $this->assertTrue(LogToDB::model('mongodb')->removeOldestIfMoreThan(2));
+        $this->assertEquals(2, LogToDB::model('mongodb')->count());
+        $this->assertTrue(LogToDB::model('mongodb')->removeOlderThan(date('Y-m-d H:i:s')));
+        $this->assertEquals(0, LogToDB::model('mongodb')->count());
+
+
+        //test wrappers for silly spelling
+        Log::debug("This is an test DEBUG log event");
+        Log::info("This is an test INFO log event");
+        Log::notice("This is an test NOTICE log event");
+
+        //sleep to pass time for record cleanup testing based on time next.
+        sleep(1);
+
+        $this->assertTrue(LogToDB::model()->removeOldestIfMoreThen(2));
+        $this->assertEquals(2, LogToDB::model()->count());
+        $this->assertTrue(LogToDB::model()->removeOlderThen(date('Y-m-d H:i:s')));
+        $this->assertEquals(0, LogToDB::model()->count());
+
+        //Same tests on mongodb
+        $this->assertTrue(LogToDB::model('mongodb')->removeOldestIfMoreThen(2));
+        $this->assertEquals(2, LogToDB::model('mongodb')->count());
+        $this->assertTrue(LogToDB::model('mongodb')->removeOlderThen(date('Y-m-d H:i:s')));
+        $this->assertEquals(0, LogToDB::model('mongodb')->count());
+
     }
 
     /**
