@@ -63,6 +63,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'level' =>  'debug',
                 'connection' => 'default',
                 'collection' => 'log',
+                'max_records' => 10,
+                'max_hours' => 1,
                 'processors' => [
                     Monolog\Processor\HostnameProcessor::class,
                     danielme85\LaravelLogToDB\Processors\PhpVersionProcessor::class
@@ -74,6 +76,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'level' => 'debug',
                 'connection' => 'mongodb',
                 'collection' => 'log',
+                'max_records' => 10,
+                'max_hours' => 1,
                 'processors' => [
                     Monolog\Processor\HostnameProcessor::class
                 ]
@@ -83,7 +87,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
                 'level' => 'warning',
                 'detailed' => false,
-                'max_rows' => 10,
+                'max_records' => false,
+                'max_hours' => false,
                 'name' => 'limited',
             ]
         ]);
@@ -363,9 +368,76 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     }
 
     /**
-     * Clear all data from the test.
+     * Test the CleanerUpper
+     *
+     * @group cleanerUpper
      */
-    public function testCleanup() {
+    public function testCleanerUpper()
+    {
+        //Add bunch of old records
+        for ($i = 0; $i < 20; $i++) {
+            $log = LogToDB::model();
+            $thePast = \Carbon\Carbon::now()->subHours(24);
+
+            $log->message = "This is fake test number: {$i}";
+            $log->channel = 'test';
+            $log->level = 100;
+            $log->level_name = 'DEBUG';
+            $log->unix_time = $thePast->unix();
+            $log->datetime = new \Monolog\DateTimeImmutable(time());
+            $log->created_at = $thePast->toDateTimeString();
+            $log->updated_at = $thePast->toDateTimeString();
+            $log->save();
+        }
+
+        //Add bunch of old records
+        for ($i = 0; $i < 20; $i++) {
+            $log = LogToDB::model('mongodb');
+            $thePast = \Carbon\Carbon::now()->subHours(24);
+
+            $log->message = "This is fake test number: {$i}";
+            $log->channel = 'test';
+            $log->level = 100;
+            $log->level_name = 'DEBUG';
+            $log->unix_time = $thePast->unix();
+            $log->datetime = new \Monolog\DateTimeImmutable(time());
+            $log->created_at = $thePast->toDateTimeString();
+            $log->updated_at = $thePast->toDateTimeString();
+            $log->save();
+        }
+
+        //Add 5 new records
+        for ($i = 0; $i < 5; $i++) {
+            Log::debug("This is an test DEBUG log event number: {$i}");
+        }
+
+        $this->assertEquals(25, LogToDB::model()->count());
+        $this->assertEquals(25, LogToDB::model('mongodb')->count());
+
+        //Run cleanup command
+        $this->artisan('log:delete')->assertExitCode(0);
+
+        $this->assertEquals(5, LogToDB::model()->count());
+        $this->assertEquals(5, LogToDB::model('mongodb')->count());
+
+        //Add 10 new records
+        for ($i = 0; $i < 10; $i++) {
+            Log::debug("This is an test DEBUG log event number: {$i}");
+        }
+
+        //Run cleanup command
+        $this->artisan('log:delete')->assertExitCode(0);
+
+        $this->assertEquals(10, LogToDB::model()->count());
+        $this->assertEquals(10, LogToDB::model('mongodb')->count());
+    }
+
+    /**
+     * Clear all data from the test.
+     *
+     * @group cleanerUpper
+     */
+    public function testFinalCleanup() {
         LogToDB::model()->truncate();
         LogToDB::model('mongodb')->truncate();
 

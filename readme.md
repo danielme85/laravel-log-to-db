@@ -10,6 +10,15 @@
 Custom Laravel 6 and >=5.6 Log channel handler that can store log events to SQL or MongoDB databases. 
 Uses Laravel native logging functionality.
 
+
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [Usage](#usage)
+* [Fetching Logs](#fetching-logs)
+* [Log Cleanup](#log-cleanup)
+* [Processors](#processors)
+
+
 ## Installation
 Use the composer require or add to composer.json. 
 ```
@@ -29,7 +38,7 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
     'stack' => [
         'name' => 'Log Stack',
         'driver' => 'stack',
-        'channels' => ['database', 'mongodb'],
+        'channels' => ['database', 'file'],
     ],
     
     'database' => [
@@ -43,6 +52,8 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
         'queue' => false,
         'queue_name' => '',
         'queue_connection' => '',
+        'max_records' => false,
+        'max_hours' => false,
         'processors' => [
               //Monolog\Processor\HostnameProcessor::class
          ]
@@ -65,9 +76,9 @@ More info about some of these options: https://laravel.com/docs/5.6/logging#cust
 There are some default settings and more information about configuring the logger in the 'logtodb.php' config file.
 This could be copied to your project if you would like edit it with the vendor publish command.
 ```
-php artisan vendor:publish
+php artisan vendor:publish --provider="danielme85\LaravelLogToDB\ServiceProvider"
 ```
-You can also set default log-to-db config settings in your .env file, for ex:
+You can also change these settings in your env file.
 ```
 LOG_DB_CONNECTION='default'
 LOG_DB_DETAILED=false
@@ -75,29 +86,21 @@ LOG_DB_MAX=100
 LOG_DB_QUEUE=false
 LOG_DB_QUEUE_NAME='logToDBQueue'
 LOG_DB_QUEUE_CONNECTION='default'
-
-## Usage
-Use the default Laravel Facade "Log"
-```php
-Log::channel()->info("This thing just happened");
-Log::channel()->warning("This kind of bad thing happened...");
+LOG_DB_MAX_COUNT=false
+LOG_DB_MAX_HOURS=false
 ```
-You can give the logging channels whatever name you want instead of: 'database', as well as the log levels.
-The naming can be used later if you want to send a Log event to a specific channel:
-```php
-Log::channel('database')->info("This thing just happened");
-Log::channel('mongodb')->info("This thing just happened");
-```
-This logger works the same as any other across Laravel, for example you can add it to a stack. 
-You can log multiple levels to multiple DB connections... the possibilities are ENDLESS! 😎
 
 #### Config priority order
-Lowest number has highest priority (overrides the one below);
-1. Log Channel config array in config/logging.php overrides logtodb.php
-2. .env File overrides config/logtodb.php file
-3. config/logtodb.php is the default config.
+There are three places you can change different options when using log-to-db: 
+1. The config file: config/logtodb.php (after doing vendor:publish).
+2. Your .env file will override settings in the logtodb.php config file.
+3. The Laravel logging config file: config/logging.php. You need to add a custom array here as mentioned above, 
+in this same array you can specify/override config settings specifically for that log channel.
 
-### Log Worker Queue
+Config values set in point 1 & 2 would work as default for all new log channels you add in the "channels" array for the 
+Laravel logging configuration (config/logging.php).
+
+#### Log Worker Queue
 It might be a good idea to save the log events with a Queue Worker. This way your server does not have to wait for
 the save process to finish. You would have to configure the Laravel Queue settings and run the Queue listener. 
 https://laravel.com/docs/5.6/queues#running-the-queue-worker
@@ -124,7 +127,7 @@ You can also log to specific log channels:
 Log::channel('database')debug("This is an test DEBUG log event");
 
 
-### Fetching Logs
+## Fetching Logs
 The logging by this channel is done trough the Eloquent Model builder.
 LogToDB::model($channel, $connection, $collection);
 You can skip all function variables and the default settings from the config/logtodb.php will be used.
@@ -211,7 +214,19 @@ No migrations needed for MongoDB.
 
 No indexes are added per default, so if you fetch a lot of log results based on specific time ranges or types: it might be a good idea to add some indexes. 
  
-#### Log Cleanup
+## Log Cleanup
+There are config values that you can set to specify the max number of log records to keep, or the max record age in hours.
+
+* logging.php channel array -> (max_records, max_hours).
+* .env file -> (LOG_DB_MAX_COUNT, LOG_DB_MAX_HOURS).
+
+<b>These option is set to *false* per default, these have to be set to desired integers before you can run the "log:delete" artisan command.</b> 
+```
+php artisan log:delete
+```
+This command will delete records based on settings described above. Add this command to your Console/kernel.php, or run manually in cron etc to enable automatic cleanup.
+
+#### Manual Cleanup
 There is a helper function to remove the oldest log events and keep a specified number
 ```php
 LogToDB::removeOldestIfMoreThan(100);
@@ -224,7 +239,7 @@ LogToDB::model()->removeOlderThan('2019-01-01');
 LogToDB::model()->removeOlderThan('2019-01-01 23:00:00');
 ```
 
-#### Processors
+## Processors
 Monolog ships with a set of [processors](https://github.com/Seldaek/monolog/tree/master/src/Monolog/Processor), these will generate additional data and populate the 'extra' field.
 
 You could also create your own custom processor, make sure they implement [Monolog\Processor\ProcessorInterface](https://github.com/Seldaek/monolog/blob/master/src/Monolog/Processor/ProcessorInterface.php).
@@ -250,7 +265,7 @@ class PhpVersionProcessor implements ProcessorInterface {
 
 ```
 
-#### Advanced /config/logging.php example
+## More logging.php config examples
 ```php
 'default' => env('LOG_CHANNEL', 'stack'),
 
@@ -269,7 +284,9 @@ class PhpVersionProcessor implements ProcessorInterface {
         'detailed' => true,
         'queue' => true
         'queue_name' => 'logQueue'
-        'queue_connection' => 'redis'
+        'queue_connection' => 'redis',
+        'max_records' => 1000,
+        'max_hours' => 24,
     ],
     
     'mongodb' => [
