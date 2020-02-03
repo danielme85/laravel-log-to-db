@@ -206,9 +206,8 @@ trait LogToDbCreateObject
     public function removeOlderThan(string $datetime)
     {
         $unixtime = strtotime($datetime);
+        $deletes = $this->where('unix_time', '<=', $unixtime)->get();
 
-        $keepers = $this->where('unix_time', '>=', $unixtime)->pluck($this->primaryKey)->toArray();
-        $deletes = $this->whereNotIn($this->primaryKey, $keepers)->get();
         if (!$deletes->isEmpty()){
             if ($deletes->each->delete()) {
                 return true;
