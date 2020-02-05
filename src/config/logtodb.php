@@ -89,4 +89,21 @@ return [
     */
     'queue_db_connection' => env('LOG_DB_QUEUE_CONNECTION', ''),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Log record purging
+    |--------------------------------------------------------------------------
+    |
+    | Automatically purge db log records based on time and/or max number of records.
+    |
+    | Number of records: should be an integer that represents the max number of records
+    | stored before the oldest is removed.
+    | When older than: records older than a give number of hours will be removed.
+    |
+    */
+    'purge_log_when_max_records' => env('LOG_DB_MAX_COUNT', false), //Ex: 1000 records
+
+    'purge_log_when_max_hours' => env('LOG_DB_MAX_HOURS', false) //Ex: 24 for 24 hours. Or 24*7 = 1 week.
+
+
 ];

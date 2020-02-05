@@ -2,6 +2,7 @@
 
 namespace danielme85\LaravelLogToDB;
 
+use danielme85\LaravelLogToDB\Commands\LogCleanerUpper;
 use Illuminate\Support\ServiceProvider as Provider;
 
 /**
@@ -29,6 +30,11 @@ class ServiceProvider extends Provider {
         $this->publishes([
             __DIR__.'/config/logtodb.php' => config_path('logtodb.php'),
         ]);
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                LogCleanerUpper::class,
+            ]);
+        }
     }
 
     /**

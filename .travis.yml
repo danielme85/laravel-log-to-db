@@ -6,7 +6,7 @@ services:
   - mysql
   - mongodb
 before_script:
-  - pecl install mongodb
+  - pecl install -f mongodb
   - mysql -e 'CREATE DATABASE testing;'
   - composer self-update
   - composer install --no-interaction

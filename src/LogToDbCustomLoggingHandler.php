@@ -11,12 +11,8 @@ use Monolog\Handler\AbstractProcessingHandler;
  */
 class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
 {
-    private $connection;
-    private $collection;
-    private $detailed;
-    private $saveWithQueue;
-    private $saveWithQueueName;
-    private $saveWithQueueConnection;
+    private $connection, $collection, $detailed, $saveWithQueue, $saveWithQueueName, $saveWithQueueConnection,
+    $maxCount, $maxDays;
 
     /**
      * LogToDbHandler constructor.
@@ -31,31 +27,6 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
     {
         //Set default level debug
         $level = 'debug';
-
-        //Log default config if present
-        $defaultConfig = config('logtodb');
-
-        if (!empty($defaultConfig)) {
-            if (isset($defaultConfig['connection'])) {
-                $this->connection = $defaultConfig['connection'];
-            }
-            if (isset($defaultConfig['collection'])) {
-                $this->collection = $defaultConfig['collection'];
-            }
-            if (isset($defaultConfig['detailed'])) {
-                $this->detailed = $defaultConfig['detailed'];
-            }
-            if (isset($defaultConfig['queue_db_saves'])) {
-                $this->saveWithQueue = $defaultConfig['queue_db_saves'];
-            }
-            if (isset($defaultConfig['queue_db_name'])) {
-                $this->saveWithQueueName = $defaultConfig['queue_db_name'];
-            }
-            if (isset($defaultConfig['queue_db_connection'])) {
-                $this->saveWithQueueConnection = $defaultConfig['queue_db_connection'];
-            }
-        }
-
 
         //Override default config with array in logging.php
         if (!empty($config)) {
@@ -79,6 +50,12 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
             }
             if (isset($config['queue_connection'])) {
                 $this->saveWithQueueConnection = $config['queue_connection'];
+            }
+            if (isset($config['max_records'])) {
+                $this->maxCount = $config['max_records'];
+            }
+            if (isset($config['max_record_hours'])) {
+                $this->maxDays = $config['max_record_hours'];
             }
         }
 
@@ -106,7 +83,9 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
                     $this->detailed,
                     $this->saveWithQueue,
                     $this->saveWithQueueName,
-                    $this->saveWithQueueConnection);
+                    $this->saveWithQueueConnection,
+                    $this->maxCount,
+                    $this->maxDays);
                 $log->newFromMonolog($record);
             } catch (\Exception $e) {
                 //We want ignore this exception for (at least) two reasons:
