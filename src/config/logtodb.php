@@ -103,7 +103,14 @@ return [
     */
     'purge_log_when_max_records' => env('LOG_DB_MAX_COUNT', false), //Ex: 1000 records
 
-    'purge_log_when_max_hours' => env('LOG_DB_MAX_HOURS', false) //Ex: 24 for 24 hours. Or 24*7 = 1 week.
 
+    'purge_log_when_max_hours' => env('LOG_DB_MAX_HOURS', false), //Ex: 24 for 24 hours. Or 24*7 = 1 week.
+
+    /*
+     |
+     | Specify the datetime format storing into the log record
+     |
+     */
+    'datetime_format' => env('LOG_DB_DATETIME_FORMAT', 'Y-m-d H:i:s:ms')
 
 ];
