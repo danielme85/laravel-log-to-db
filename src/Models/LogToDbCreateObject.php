@@ -57,44 +57,37 @@ trait LogToDbCreateObject
                     $newexception['class'] = get_class($exception);
                     if (method_exists($exception, 'getMessage')) {
                         $newexception['message'] = $exception->getMessage();
-                    }
-                    else {
+                    } else {
                         $newexception['message'] = '';
                     }
                     if (method_exists($exception, 'getCode')) {
                         $newexception['code'] = $exception->getCode();
-                    }
-                    else {
+                    } else {
                         $newexception['code'] = '';
                     }
                     if (method_exists($exception, 'getFile')) {
                         $newexception['file'] = $exception->getFile();
-                    }
-                    else {
+                    } else {
                         $newexception['file'] = '';
                     }
                     if (method_exists($exception, 'getLine')) {
                         $newexception['line'] = $exception->getLine();
-                    }
-                    else {
+                    } else {
                         $newexception['line'] = '';
                     }
                     if (method_exists($exception, 'getTrace')) {
                         $newexception['trace'] = $exception->getTrace();
-                    }
-                    else {
+                    } else {
                         $newexception['trace'] = '';
                     }
                     if (method_exists($exception, 'getPrevious')) {
                         $newexception['previous'] = $exception->getPrevious();
-                    }
-                    else {
+                    } else {
                         $newexception['previous'] = '';
                     }
                     if (method_exists($exception, 'getSeverity')) {
                         $newexception['severity'] = $exception->getSeverity();
-                    }
-                    else {
+                    } else {
                         $newexception['severity'] = '';
                     }
 
@@ -112,7 +105,7 @@ trait LogToDbCreateObject
      */
     public function setDatetimeAttribute(object $value)
     {
-        $this->attributes['datetime'] = serialize($value);
+        $this->attributes['datetime'] = serialize($value->format(config('logtodb.datetime_format')));
     }
 
     /**
@@ -208,7 +201,7 @@ trait LogToDbCreateObject
         $unixtime = strtotime($datetime);
         $deletes = $this->where('unix_time', '<=', $unixtime)->get();
 
-        if (!$deletes->isEmpty()){
+        if (!$deletes->isEmpty()) {
             if ($deletes->each->delete()) {
                 return true;
             }
