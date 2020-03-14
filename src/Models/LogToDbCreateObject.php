@@ -21,17 +21,6 @@ trait LogToDbCreateObject
     }
 
     /**
-     * DateTime Accessor
-     *
-     * @param $value
-     * @return object
-     */
-    public function getDatetimeAttribute($value)
-    {
-        return unserialize($value);
-    }
-
-    /**
      * Extra Accessor
      *
      * @param $value
@@ -105,7 +94,7 @@ trait LogToDbCreateObject
      */
     public function setDatetimeAttribute(object $value)
     {
-        $this->attributes['datetime'] = serialize($value->format(config('logtodb.datetime_format')));
+        $this->attributes['datetime'] = $value->format(config('logtodb.datetime_format'));
     }
 
     /**

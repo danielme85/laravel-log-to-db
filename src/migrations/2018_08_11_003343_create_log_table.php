@@ -20,7 +20,7 @@ class CreateLogTable extends Migration
             $table->integer('level')->default(0);
             $table->string('level_name', 20);
             $table->integer('unix_time');
-            $table->text('datetime')->nullable();
+            $table->string('datetime')->nullable();
             $table->longText('context')->nullable();
             $table->text('extra')->nullable();
             $table->timestamps();

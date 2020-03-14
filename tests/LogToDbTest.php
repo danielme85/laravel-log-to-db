@@ -67,6 +67,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'max_hours' => 1,
                 'processors' => [
                     Monolog\Processor\HostnameProcessor::class,
+                    Monolog\Processor\MemoryUsageProcessor::class,
                     danielme85\LaravelLogToDB\Processors\PhpVersionProcessor::class
                 ]
             ],
@@ -159,6 +160,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     {
         $log = LogToDB::model()->orderBy('created_at', 'desc')->first()->toArray();
         $this->assertNotEmpty($log['extra']);
+        $this->assertNotEmpty($log['extra']['memory_usage']);
         $this->assertNotEmpty($log['extra']['php_version']);
         $this->assertNotEmpty($log['extra']['hostname']);
     }
@@ -249,6 +251,19 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testModelInteraction() {
         $model = LogToDB::model();
+
+        $log = $model->first();
+        $this->assertIsNumeric($log->id);
+        $this->assertIsString($log->message);
+        $this->assertIsString($log->channel);
+        $this->assertIsNumeric($log->level);
+        $this->assertIsString($log->level_name);
+        $this->assertIsNumeric($log->unix_time);
+        $this->assertIsString($log->datetime);
+        $this->assertIsArray($log->extra);
+        $this->assertNotEmpty($log->created_at);
+        $this->assertNotEmpty($log->updated_at);
+
         //Get all
         $all = $model->get();
         $this->assertNotEmpty($all->toArray());
@@ -445,5 +460,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertEmpty(LogToDB::model('mongodb')->get()->toArray());
         $this->assertEmpty(LogToDB::model('limited')->get()->toArray());
         $this->assertEmpty(LogToDB::model('database')->get()->toArray());
+
+        $this->artisan('migrate:rollback', ['--database' => 'mysql']);
     }
 }

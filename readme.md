@@ -7,7 +7,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
 [![CodeFactor](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db/badge)](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db)
 
-Custom Laravel 6 and >=5.6 Log channel handler that can store log events to SQL or MongoDB databases. 
+Custom Laravel 6.x and  5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
 Uses Laravel native logging functionality.
 
 
@@ -88,6 +88,7 @@ LOG_DB_QUEUE_NAME='logToDBQueue'
 LOG_DB_QUEUE_CONNECTION='default'
 LOG_DB_MAX_COUNT=false
 LOG_DB_MAX_HOURS=false
+LOG_DB_DATETIME_FORMAT='Y-m-d H:i:s:ms'
 ```
 
 #### Config priority order
