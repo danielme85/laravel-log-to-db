@@ -71,7 +71,7 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
  * processors = Array of additional processors. These will add additional info into the 'extra' field in the logged data.
 [More information about processors](#processors)
  
-More info about some of these options: https://laravel.com/docs/5.6/logging#customizing-monolog-for-channels
+More info about some of these options: https://laravel.com/docs/6.x/logging#customizing-monolog-for-channels
 
 There are some default settings and more information about configuring the logger in the 'logtodb.php' config file.
 This could be copied to your project if you would like edit it with the vendor publish command.
@@ -91,6 +91,9 @@ LOG_DB_MAX_HOURS=false
 LOG_DB_DATETIME_FORMAT='Y-m-d H:i:s:ms'
 ```
 
+> **PLEASE NOTE**: Starting with v2.2.0, the datetime column will be saved as a string in the format given in
+> 'datetime_format' in logtodb.php config file, or the LOG_DB_DATETIME_FORMAT value in your .env file.
+
 #### Config priority order
 There are three places you can change different options when using log-to-db: 
 1. The config file: config/logtodb.php (after doing vendor:publish).
@@ -104,7 +107,7 @@ Laravel logging configuration (config/logging.php).
 #### Log Worker Queue
 It might be a good idea to save the log events with a Queue Worker. This way your server does not have to wait for
 the save process to finish. You would have to configure the Laravel Queue settings and run the Queue listener. 
-https://laravel.com/docs/5.6/queues#running-the-queue-worker
+https://laravel.com/docs/6.x/queues#running-the-queue-worker
 
 The queue can be enabled/disabled in any of the following places:  
 * LOG_DB_QUEUE = true | in .env
@@ -113,7 +116,7 @@ The queue can be enabled/disabled in any of the following places:
 
 ## Usage
 Since this is a custom log channel for Laravel, all "standard" ways of generating log events etc should work with 
-the Laravel Log Facade. See https://laravel.com/docs/5.6/logging for more information.
+the Laravel Log Facade. See https://laravel.com/docs/6.x/logging for more information.
 ```php
 Log::debug("This is an test DEBUG log event");
 Log::info("This is an test INFO log event");
@@ -158,7 +161,7 @@ $logsFromMongoDB = LogToDB::model(null, 'mongodb')->get(); //Get all logs from t
 Since Laravel is supposed to use static defined collection/table names, 
 it might be better to use your own model in your app for a more solid approach.
 <br>
-https://laravel.com/docs/5.7/eloquent#eloquent-model-conventions
+https://laravel.com/docs/6.x/eloquent#eloquent-model-conventions
 
 ##### SQL
 ```php
@@ -169,7 +172,7 @@ use Illuminate\Database\Eloquent\Model;
 class Log extends Model
 {
     protected $table = 'log';
-    protected $connection = 'mysql'
+    protected $connection = 'mysql';
     
 }
 ```
