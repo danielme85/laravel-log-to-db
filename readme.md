@@ -15,6 +15,7 @@ Uses Laravel native logging functionality.
 * [Configuration](#configuration)
 * [Usage](#usage)
 * [Fetching Logs](#fetching-logs)
+* [Custom Eloquent Model](#custom-eloquent-model)
 * [Log Cleanup](#log-cleanup)
 * [Processors](#processors)
 
@@ -40,10 +41,10 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
         'driver' => 'stack',
         'channels' => ['database', 'file'],
     ],
-    
     'database' => [
         'driver' => 'custom',
         'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+        //'model' => App\Model\Log::class, //Your own optional custom model
         'level' => env('APP_LOG_LEVEL', 'debug'),
         'name' => 'My DB Log',
         'connection' => 'default',
@@ -56,6 +57,7 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
         'max_hours' => false,
         'processors' => [
               //Monolog\Processor\HostnameProcessor::class
+              // ..
          ]
     ],
     ...
@@ -157,20 +159,22 @@ $logsFromMysql   = LogToDB::model(null, 'mysql')->get(); //Get all logs from the
 $logsFromMongoDB = LogToDB::model(null, 'mongodb')->get(); //Get all logs from the mongodb connection (from Laravel database config)
 ```
 
-#### Add your own Model in your app
+## Custom Eloquent Model
 Since Laravel is supposed to use static defined collection/table names, 
 it might be better to use your own model in your app for a more solid approach.
-<br>
-https://laravel.com/docs/6.x/eloquent#eloquent-model-conventions
+You can use your own eloquent model by referencing it in the config, then adding the trait: "LogToDbCreateObject"
 
 ##### SQL
 ```php
-namespace App;
+namespace App\Models;
 
+use danielme85\LaravelLogToDB\Models\LogToDbCreateObject;
 use Illuminate\Database\Eloquent\Model;
 
-class Log extends Model
+class CustomLog extends Model
 {
+    use LogToDbCreateObject;
+
     protected $table = 'log';
     protected $connection = 'mysql';
     
@@ -179,22 +183,62 @@ class Log extends Model
 
 ##### MongoDB
 ```php
-namespace App;
-
+namespace App\Models;
+use danielme85\LaravelLogToDB\Models\LogToDbCreateObject;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
-class LogMongo extends Eloquent
+class CustomLogMongo extends Eloquent
 {
+    use LogToDbCreateObject;
+
     protected $collection = 'log';
     protected $connection = 'mongodb';
 
 }
 ``` 
 
-Fetching the model trough the LogToDB class (like the examples above) might have some side-effects as tables and connections are 
-declared dynamically... aka made by Hackerman!
+LOG_DB_MODEL='App\Models\CustomLog'
+
+> **WARNING**: Fetching the model trough the dynamic Eloquent model (default behavior) have some side-effects as tables and connections are 
+              declared dynamically instead of assigned properties in the model class. Certain functions are broken like LogToDB::model->all(), while LogToDB::model->where()->get() will work as normal.
+>             Using your own models avoids these problems.
+
+#### Model Closures and Observers
+You can either add [closures](https://laravel.com/docs/7.x/eloquent#events-using-closures) on your custom application model mentioned above, 
+or add a [model observer](https://laravel.com/docs/7.x/eloquent#observers) for the default LogToDb models.
 <br>
-![](hackerman.gif)
+Create a observer:
+```
+<?php
+namespace App\Observers;
+
+use danielme85\LaravelLogToDB\Models\DBLog;
+
+class LogObserver
+{
+    public function created(DBLog $log)
+    {
+        //
+    }
+}
+```
+Then add to your AppServiceProvider (or another provider that calls the app boot function).
+```
+   namespace App\Providers;
+   
+   use App\Observers\LogObserver;
+   use danielme85\LaravelLogToDB\LogToDB;
+   use Illuminate\Support\ServiceProvider;
+   
+   class AppServiceProvider extends ServiceProvider
+   {
+       public function boot()
+       {
+           LogToDB::model()->observe(LogObserver::class);
+       }
+   }
+``
+ 
 
 #### Adding tables/expanding collections 
 The Log handler for SQL expects the following schema:
@@ -322,3 +366,7 @@ class PhpVersionProcessor implements ProcessorInterface {
     //....
 ]
 ```
+
+Development supported by:
+<br>
+![](hackerman.gif)
