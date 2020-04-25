@@ -22,7 +22,6 @@ return [
     | Ex: 'connection' => 'mongodb' wil use the connection 'mongodb' in database.php*
     |
     | Supported connections should be same as Laravel since the Laravel DB/Eloquent
-    | is used. See https://laravel.com/docs/5.6/database for more info.
     | Supported DB engines as of this writing: [MySQL] [PostgreSQL] [SQLite] [SQL Server]
     |
     | *MongoDB is supported with: "jenssegers/laravel-mongodb".
@@ -36,7 +35,7 @@ return [
     | DB Collection
     |--------------------------------------------------------------------------
     |
-    | Set the default database collection/table to use.
+    | Set the default database table (sql) or collection (mongodb) to use.
     */
     'collection' => env('LOG_DB_COLLECTION', 'log'),
 
@@ -54,15 +53,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Model class
+    |--------------------------------------------------------------------------
+    |
+    | You can specify your own custom Eloquent model to be used when saving
+    | and getting log events.
+    */
+    'model' => env('LOG_DB_MODEL', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Enable Queue
     |--------------------------------------------------------------------------
     |
     | It might be a good idea to save log events with the queue helper.
     | This way the requests going to your sever does not have to wait for the Log
     | event to be saved.
-    | https://laravel.com/docs/5.7/queues#running-the-queue-worker
     */
-    'queue_db_saves' => env('LOG_DB_QUEUE', false),
+    'queue' => env('LOG_DB_QUEUE', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -71,9 +79,8 @@ return [
     |
     | Set to a string like: 'queue_db_name' => 'logWorker',
     | and make sure to run the queue worker. Leave empty for default queue.
-    | https://laravel.com/docs/5.7/queues#customizing-the-queue-and-connections
     */
-    'queue_db_name' => env('LOG_DB_QUEUE_NAME', ''),
+    'queue_name' => env('LOG_DB_QUEUE_NAME', ''),
 
     /*
     |--------------------------------------------------------------------------
@@ -85,9 +92,8 @@ return [
     | This relates yto your queue settings in the config/queue.php file.
     | Leave blank to use the default connection.
     |
-    | https://laravel.com/docs/5.7/queues#customizing-the-queue-and-connection
     */
-    'queue_db_connection' => env('LOG_DB_QUEUE_CONNECTION', ''),
+    'queue_connection' => env('LOG_DB_QUEUE_CONNECTION', ''),
 
     /*
     |--------------------------------------------------------------------------
@@ -101,10 +107,9 @@ return [
     | When older than: records older than a give number of hours will be removed.
     |
     */
-    'purge_log_when_max_records' => env('LOG_DB_MAX_COUNT', false), //Ex: 1000 records
+    'max_records' => env('LOG_DB_MAX_COUNT', false), //Ex: 1000 records
 
-
-    'purge_log_when_max_hours' => env('LOG_DB_MAX_HOURS', false), //Ex: 24 for 24 hours. Or 24*7 = 1 week.
+    'max_hours' => env('LOG_DB_MAX_HOURS', false), //Ex: 24 for 24 hours. Or 24*7 = 1 week.
 
     /*
      |

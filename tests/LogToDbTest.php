@@ -17,10 +17,11 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->artisan('migrate', ['--database' => 'mysql']);
 
     }
+
     /**
      * Define environment setup.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param \Illuminate\Foundation\Application $app
      *
      * @return void
      */
@@ -39,13 +40,13 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'collation' => 'utf8_unicode_ci',
             ],
                 'mongodb' => [
-                    'driver'   => 'mongodb',
-                    'host'     => '127.0.0.1',
-                    'port'     => 27017,
+                    'driver' => 'mongodb',
+                    'host' => '127.0.0.1',
+                    'port' => 27017,
                     'database' => 'testing',
                     'username' => '',
                     'password' => '',
-                    'options'  => [
+                    'options' => [
                         //'database' => 'admin' // sets the authentication database required by mongo 3
                     ]
                 ],
@@ -60,7 +61,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
             'database' => [
                 'driver' => 'custom',
                 'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
-                'level' =>  'debug',
+                'level' => 'debug',
                 'connection' => 'default',
                 'collection' => 'log',
                 'max_records' => 10,
@@ -101,7 +102,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      * In a normal app environment these would be added to the 'providers' array in
      * the config/app.php file.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param \Illuminate\Foundation\Application $app
      *
      * @return array
      */
@@ -118,7 +119,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @group basic
      */
-    public function testClassInit() {
+    public function testClassInit()
+    {
         $test = new LogToDB();
         $this->assertInstanceOf('danielme85\LaravelLogToDB\LogToDB', $test);
 
@@ -132,7 +134,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @group basic
      */
-    public function testLogLevels() {
+    public function testLogLevels()
+    {
         Log::debug("This is an test DEBUG log event");
         Log::info("This is an test INFO log event");
         Log::notice("This is an test NOTICE log event");
@@ -149,6 +152,17 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertCount(8, $logReader);
         $this->assertCount(8, $logReaderMongoDB);
         $this->assertCount(8, $logReaderSpecific);
+    }
+
+    /**
+     *
+     * @group events
+     * @throws Exception
+     */
+    public function testMessageLoggedEvent()
+    {
+        $this->expectsEvents([\Illuminate\Log\Events\MessageLogged::class]);
+        Log::debug("This is to trigger a log event.");
     }
 
     /**
@@ -170,7 +184,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @group advanced
      */
-    public function testLoggingToChannels() {
+    public function testLoggingToChannels()
+    {
         //Test limited config, with limited rows and level
         Log::channel('limited')->debug("This message should not be stored because DEBUG is LOWER then WARNING");
         $this->assertEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'DEBUG')->get()->toArray());
@@ -185,7 +200,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @group advanced
      */
-    public function testException() {
+    public function testException()
+    {
         $e = new Symfony\Component\HttpKernel\Exception\BadRequestHttpException("This is a fake 500 error", null, 500, ['fake-header' => 'value']);
         Log::warning("Error", ['exception' => $e, 'more' => 'infohere']);
         $log = LogToDB::model()->where('message', 'Error')->first();
@@ -197,10 +213,11 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @group queue
      */
-    public function testQueue() {
+    public function testQueue()
+    {
         Queue::fake();
 
-        config()->set('logtodb.queue_db_saves', true);
+        config()->set('logtodb.queue', true);
 
         Log::info("I'm supposed to be added to the queue...");
         Log::warning("I'm supposed to be added to the queue...");
@@ -208,14 +225,17 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
 
         Queue::assertPushed(SaveNewLogEvent::class, 6);
 
-        config()->set('logtodb.queue_db_queue', 'logHandler');
-        config()->set('logtodb.queue_db_connection', 'default');
+        config()->set('logtodb.queue_name', 'logHandler');
+        config()->set('logtodb.queue_connection', 'default');
 
         Log::info("I'm supposed to be added to the queue...");
         Log::warning("I'm supposed to be added to the queue...");
         Log::debug("I'm supposed to be added to the queue...");
 
         Queue::assertPushed(SaveNewLogEvent::class, 12);
+
+        config()->set('logtodb.queue', false);
+
     }
 
     /**
@@ -249,7 +269,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @group model
      */
-    public function testModelInteraction() {
+    public function testModelInteraction()
+    {
         $model = LogToDB::model();
 
         $log = $model->first();
@@ -331,9 +352,26 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
 
     }
 
-    public function testStandAloneModels() {
+
+    /**
+     * $group model
+     */
+    public function testStandAloneModels()
+    {
         $this->assertNotEmpty(LogSql::get()->toArray());
         $this->assertNotEmpty(LogMongo::get()->toArray());
+    }
+
+    /**
+     * @group model
+     */
+    public function testCustomModel()
+    {
+        config()->set('logtodb.model', \danielme85\LaravelLogToDB\Tests\CustomEloquentModel::class);
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('This is on a custom model class');
+        Log::info('This is on a custom model class');
+        $this->assertStringContainsString('This is on a custom model class', LogToDB::model()->latest('id')->first()->message);
     }
 
     /**
@@ -341,7 +379,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @group cleanup
      */
-    public function testRemoves() {
+    public function testRemoves()
+    {
         Log::debug("This is an test DEBUG log event");
         Log::info("This is an test INFO log event");
         Log::notice("This is an test NOTICE log event");
@@ -452,7 +491,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @group cleanerUpper
      */
-    public function testFinalCleanup() {
+    public function testFinalCleanup()
+    {
         LogToDB::model()->truncate();
         LogToDB::model('mongodb')->truncate();
 

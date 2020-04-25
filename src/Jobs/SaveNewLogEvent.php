@@ -36,11 +36,9 @@ class SaveNewLogEvent implements ShouldQueue
     public function handle()
     {
         $log = CreateLogFromRecord::generate(
-            $this->logToDb->connection,
-            $this->logToDb->collection,
+            $this->logToDb->getModel(),
             $this->record,
-            $this->logToDb->detailed,
-            $this->logToDb->database['driver'] ?? null
+            $this->logToDb->getConfig('detailed') ?? null
         );
 
         $log->save();

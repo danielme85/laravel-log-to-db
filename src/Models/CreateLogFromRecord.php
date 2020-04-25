@@ -13,28 +13,14 @@ class CreateLogFromRecord
     /**
      * Create a new log object
      *
-     * @param string $connection
-     * @param string $collection
+     * @param $log
      * @param array $record
      * @param bool $detailed
-     * @param string|null $driver
      *
-     * @return DBLog|DBLogMongoDB
+     * @return mixed
      */
-    public static function generate(string $connection, string $collection, array $record, bool $detailed = false, string $driver = null)
+    public static function generate($log, array $record, bool $detailed = false)
     {
-
-        if ($driver === 'mongodb') {
-            //MongoDB has its own Model
-            $log = new DBLogMongoDB();
-            $log->bind($connection, $collection);
-        }
-        else {
-            //Use the default Laravel Eloquent Model
-            $log = new DBLog();
-            $log->bind($connection, $collection);
-        }
-
         if (isset($record['message'])) {
             $log->message = $record['message'];
         }

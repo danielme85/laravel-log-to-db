@@ -15,55 +15,15 @@ use danielme85\LaravelLogToDB\Models\CreateLogFromRecord;
 class LogToDB
 {
     /**
-     * Connection referenced in logging config.
-     * @var null
-     */
-    public $channelConnection;
-    /**
-     * Store detailed log
-     * @var string
-     */
-    public $detailed;
-    /**
      * Connection reference in databases config.
      * @var string
      */
     public $connection;
+
     /**
-     * The table in SQL or Collection in noSQL.
      * @var string
      */
     public $collection;
-
-    /**
-     * Use queue driver to save record.
-     * @var bool
-     */
-    public $saveWithQueue;
-
-    /**
-     * Name of the queue to use.
-     * @var string
-     */
-    public $saveWithQueueName;
-
-    /**
-     * Queue connection to use
-     * @var string
-     */
-    public $saveWithQueueConnection;
-
-    /**
-     * Purge after number of records
-     * @var int
-     */
-    private $purgeAfterNumber;
-
-    /**
-     * Purge after number of hours old
-     * @var int
-     */
-    private $purgeAfterNumberOfHours;
 
     /**
      * The DB config details
@@ -71,84 +31,34 @@ class LogToDB
      */
     public $database;
 
+    /**
+     * @var
+     */
+    protected $model;
+
+    /**
+     * @var array
+     */
+    protected $config;
 
     /**
      * LogToDB constructor.
      *
-     * @param string $connection The DB connection name to use.
-     * @param string $collection The name of the collection/table to use.
-     * @param array $config Array of combined config values.
+     * @param array $loggingConfig config values;.
      */
-    function __construct(string $channelConnection = null,
-                         string $collection = null,
-                         bool $detailed = null,
-                         bool $queue = null,
-                         string $queueName = null,
-                         string $queueConnection = null,
-                         int $purgeAfterNumber = null,
-                         int $purgeAfterNumberOfHours = null)
+    function __construct($loggingConfig = [])
     {
         //Log default config if present
-        $config = config('logtodb');
-        if (!empty($config)) {
-            if (isset($config['connection']) && !empty($config['connection'])) {
-                $this->connection = $config['connection'];
-            }
-            if (isset($config['collection']) && !empty($config['collection'])) {
-                $this->collection = $config['collection'];
-            }
-            if (isset($config['detailed']) && !empty($config['detailed'])) {
-                $this->detailed = $config['detailed'];
-            }
-            if (isset($config['queue_db_saves']) && !empty($config['queue_db_saves'])) {
-                $this->saveWithQueue = $config['queue_db_saves'];
-            }
-            if (isset($config['queue_db_name']) && !empty($config['queue_db_name'])) {
-                $this->saveWithQueueName = $config['queue_db_name'];
-            }
-            if (isset($config['queue_db_connection']) && !empty($config['connection'])) {
-                $this->saveWithQueueConnection = $config['queue_db_connection'];
-            }
-            if (isset($config['purge_log_when_max_records']) && !empty($config['purge_log_when_max_records'])) {
-                $this->purgeAfterNumber = $config['purge_log_when_max_records'];
-            }
-            if (isset($config['purge_log_when_max_hours']) && !empty($config['purge_log_when_max_hours'])) {
-                $this->purgeAfterNumberOfHours = $config['purge_log_when_max_hours'];
-            }
-        }
-
-        //Set config based on specified config from the Log handler
-        if (!empty($channelConnection)) {
-            $this->channelConnection = $channelConnection;
-        }
-        if (!empty($collection)) {
-            $this->collection = $collection;
-        }
-        if (!empty($detailed)) {
-            $this->detailed = $detailed;
-        }
-        if (!empty($queue)) {
-            $this->saveWithQueue = $queue;
-        }
-        if (!empty($queueName)) {
-            $this->saveWithQueueName = $queueName;
-        }
-        if (!empty($queueConnection)) {
-            $this->saveWithQueueConnection = $queueConnection;
-        }
-        if (!empty($purgeAfterNumber)) {
-            $this->purgeAfterNumber = $purgeAfterNumber;
-        }
-        if (!empty($purgeAfterNumberOfHours)) {
-            $this->purgeAfterNumberOfHours = $purgeAfterNumberOfHours;
-        }
+        $this->config = $loggingConfig + config('logtodb');
+        $this->collection = $this->config['collection'] ?? 'log';
+        $this->model = $this->config['model'] ?? null;
 
         //Get the DB connections
         $dbconfig = config('database.connections');
 
-        if (!empty($this->channelConnection)) {
-            if (isset($dbconfig[$this->channelConnection])) {
-                $this->connection = $this->channelConnection;
+        if (!empty($this->config['connection'])) {
+            if (!empty($dbconfig[$this->config['connection']])) {
+                $this->connection = $this->config['connection'];
             }
         }
 
@@ -156,20 +66,21 @@ class LogToDB
         if ($this->connection === 'default' or empty($this->connection)) {
             $this->connection = config('database.default');
         }
+
         if (isset($dbconfig[$this->connection])) {
             $this->database = $dbconfig[$this->connection];
         }
+
         if (empty($this->database)) {
             new \ErrorException("Required configs missing: The LogToDB class needs a database correctly setup in the configs: databases.php and logtodb.php");
         }
 
         //If the string 'default' is set for queue connection, then set null as this defaults to 'default' anyways.
-        if ($this->saveWithQueue) {
-            if ($this->saveWithQueueConnection === 'default') {
-                $this->saveWithQueueConnection = null;
+        if (!empty($this->config['queue'])) {
+            if ($this->config['queue_name'] === 'default') {
+                $this->config['queue_name'] = null;
             }
         }
-
     }
 
     /**
@@ -206,7 +117,7 @@ class LogToDB
         }
 
         //Return new instance of this model
-        $model = new self($conn, $coll);
+        $model = new self(['connection' => $conn, 'collection' => $coll]);
 
         return $model->getModel();
     }
@@ -214,9 +125,13 @@ class LogToDB
     /**
      * @return DBLogMongoDB | DBLog;
      */
-    private function getModel()
+    public function getModel()
     {
-        if ($this->database['driver'] === 'mongodb') {
+        //Use custom model
+        if (!empty($this->model)) {
+            return new $this->model;
+        }
+        else if ($this->database['driver'] === 'mongodb') {
             //MongoDB has its own Model
             $mongo = new DBLogMongoDB();
             $mongo->bind($this->connection, $this->collection);
@@ -240,41 +155,45 @@ class LogToDB
     public function newFromMonolog(array $record)
     {
         if (!empty($this->connection)) {
-            if ($this->saveWithQueue) {
-                if (isset($record['context']['exception']) and !empty($record['context']['exception'])) {
+            if ($this->config['queue']) {
+                if (isset($record['context']['exception']) && !empty($record['context']['exception'])) {
                     if (strpos(get_class($record['context']['exception']), "Exception") !== false) {
                         dispatch_now(new SaveNewLogEvent($this, $record));
                     }
                 }
-                if (empty($this->saveWithQueueName) and empty($this->saveWithQueueConnection)) {
+                if (empty($this->config['queue_name']) && empty($this->config['queue_connection'])) {
                     dispatch(new SaveNewLogEvent($this, $record));
-                } else if (!empty($this->saveWithQueueName) and !empty($this->saveWithQueueConnection)) {
+                } else if (!empty($this->config['queue_name']) && !empty($this->config['queue_connection'])) {
                     dispatch(new SaveNewLogEvent($this, $record))
-                        ->onConnection($this->saveWithQueueConnection)
-                        ->onQueue($this->saveWithQueueName);
-                } else if (!empty($this->saveWithQueueConnection)) {
-                    dispatch(new SaveNewLogEvent($this, $record)
-                    )->onConnection($this->saveWithQueueConnection);
-                } else if (!empty($this->saveWithQueueName)) {
+                        ->onConnection($this->config['queue_connection'])
+                        ->onQueue($this->config['queue_name']);
+                } else if (!empty($this->config['queue_connection'])) {
                     dispatch(new SaveNewLogEvent($this, $record))
-                        ->onQueue($this->saveWithQueueName);
+                        ->onConnection($this->config['queue_connection']);
+                } else if (!empty($this->config['queue_name'])) {
+                    dispatch(new SaveNewLogEvent($this, $record))
+                        ->onQueue($this->config['queue_name']);
                 }
             } else {
                 $log = CreateLogFromRecord::generate(
-                    $this->connection,
-                    $this->collection,
+                    $this->getModel(),
                     $record,
-                    $this->detailed,
-                    $this->database['driver'] ?? null
+                    $this->getConfig('detailed')
                 );
-
                 if ($log->save()) {
-
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param string $config
+     * @return mixed|null
+     */
+    public function getConfig(string $config) {
+        return $this->config[$config] ?? null;
     }
 }
