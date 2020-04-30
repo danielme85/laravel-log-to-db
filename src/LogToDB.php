@@ -5,7 +5,6 @@ namespace danielme85\LaravelLogToDB;
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\Models\DBLog;
 use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
-use danielme85\LaravelLogToDB\Models\CreateLogFromRecord;
 
 /**
  * Class LogToDb
@@ -32,7 +31,7 @@ class LogToDB
     public $database;
 
     /**
-     * @var
+     * @var string
      */
     protected $model;
 
@@ -175,8 +174,8 @@ class LogToDB
                         ->onQueue($this->config['queue_name']);
                 }
             } else {
-                $log = CreateLogFromRecord::generate(
-                    $this->getModel(),
+                $model = $this->getModel();
+                $log = $model->generate(
                     $record,
                     $this->getConfig('detailed')
                 );
@@ -190,6 +189,8 @@ class LogToDB
     }
 
     /**
+     * Get config value
+     *
      * @param string $config
      * @return mixed|null
      */

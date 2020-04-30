@@ -12,7 +12,14 @@ class SaveNewLogEvent implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
 
+    /**
+     * @var object
+     */
     protected $logToDb;
+
+    /**
+     * @var array
+     */
     protected $record;
 
     /**
@@ -35,10 +42,10 @@ class SaveNewLogEvent implements ShouldQueue
      */
     public function handle()
     {
-        $log = CreateLogFromRecord::generate(
-            $this->logToDb->getModel(),
+        $model = $this->logToDb->getModel();
+        $log = $model->generate(
             $this->record,
-            $this->logToDb->getConfig('detailed') ?? null
+            $this->logToDb->getConfig('detailed')
         );
 
         $log->save();

@@ -368,7 +368,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     public function testCustomModel()
     {
         config()->set('logtodb.model', \danielme85\LaravelLogToDB\Tests\CustomEloquentModel::class);
-        $this->expectException(ErrorException::class);
+        $this->expectException(\danielme85\LaravelLogToDB\Models\DBLogException::class);
         $this->expectExceptionMessage('This is on a custom model class');
         Log::info('This is on a custom model class');
         $this->assertStringContainsString('This is on a custom model class', LogToDB::model()->latest('id')->first()->message);

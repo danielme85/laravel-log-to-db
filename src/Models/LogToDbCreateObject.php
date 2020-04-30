@@ -10,6 +10,68 @@ namespace danielme85\LaravelLogToDB\Models;
 trait LogToDbCreateObject
 {
     /**
+     * Create a new log object
+     *
+     * @param array $record
+     * @param bool $detailed
+     *
+     * @return mixed
+     */
+    public function generate(array $record, bool $detailed = false)
+    {
+        if (isset($record['message'])) {
+            $this->message = $record['message'];
+        }
+        if ($detailed) {
+            if (isset($record['context'])) {
+                if (!empty($record['context'])) {
+                    $this->context = $record['context'];
+                }
+            }
+        }
+        if (isset($record['level'])) {
+            $this->level = $record['level'];
+        }
+        if (isset($record['level_name'])) {
+            $this->level_name = $record['level_name'];
+        }
+        if (isset($record['channel'])) {
+            $this->channel = $record['channel'];
+        }
+        if (isset($record['datetime'])) {
+            $this->datetime = $record['datetime'];
+        }
+        if (isset($record['extra'])) {
+            if (!empty($record['extra'])) {
+                $this->extra = $record['extra'];
+            }
+        }
+        $this->unix_time = time();
+
+        return $this;
+    }
+
+    /**
+     * @param $value
+     */
+    public function setMessageAttribute($value)
+    {
+        if (config('logtodb.encrypt')) {
+            $this->attributes['message'] = encrypt($value);
+        } else {
+            $this->attributes['message'] = $value;
+        }
+    }
+
+    public function getMessageAttribute($value)
+    {
+        if (config('logtodb.encrypt')) {
+            return decrypt($value) ?? $value;
+        }
+
+        return $value;
+    }
+    /**
      * Context Accessor
      *
      * @param $value
@@ -47,37 +109,37 @@ trait LogToDbCreateObject
                     if (method_exists($exception, 'getMessage')) {
                         $newexception['message'] = $exception->getMessage();
                     } else {
-                        $newexception['message'] = '';
+                        $newexception['message'] = null;
                     }
                     if (method_exists($exception, 'getCode')) {
                         $newexception['code'] = $exception->getCode();
                     } else {
-                        $newexception['code'] = '';
+                        $newexception['code'] = null;
                     }
                     if (method_exists($exception, 'getFile')) {
                         $newexception['file'] = $exception->getFile();
                     } else {
-                        $newexception['file'] = '';
+                        $newexception['file'] = null;
                     }
                     if (method_exists($exception, 'getLine')) {
                         $newexception['line'] = $exception->getLine();
                     } else {
-                        $newexception['line'] = '';
+                        $newexception['line'] = null;
                     }
                     if (method_exists($exception, 'getTrace')) {
                         $newexception['trace'] = $exception->getTrace();
                     } else {
-                        $newexception['trace'] = '';
+                        $newexception['trace'] = null;
                     }
                     if (method_exists($exception, 'getPrevious')) {
                         $newexception['previous'] = $exception->getPrevious();
                     } else {
-                        $newexception['previous'] = '';
+                        $newexception['previous'] = null;
                     }
                     if (method_exists($exception, 'getSeverity')) {
                         $newexception['severity'] = $exception->getSeverity();
                     } else {
-                        $newexception['severity'] = '';
+                        $newexception['severity'] = null;
                     }
 
                     $value['exception'] = $newexception;

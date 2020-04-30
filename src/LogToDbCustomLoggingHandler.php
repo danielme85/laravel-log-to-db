@@ -2,6 +2,7 @@
 
 namespace danielme85\LaravelLogToDB;
 
+use danielme85\LaravelLogToDB\Models\DBLogException;
 use Monolog\Handler\AbstractProcessingHandler;
 
 /**
@@ -49,12 +50,24 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
      * Write the Log
      *
      * @param array $record
+     * @throws DBLogException
      */
     protected function write(array $record): void
     {
         if (!empty($record)) {
-            $log = new LogToDB($this->config);
-            $log->newFromMonolog($record);
+            if (!empty($record['context']['exception'])
+                && strpos(get_class($record['context']['exception']), "DBLogException")) {
+                //Do nothing if empty log record or an error Exception from itself.
+            } else {
+                try {
+                    $log = new LogToDB($this->config);
+                    $log->newFromMonolog($record);
+                } catch (\Exception $e) {
+                    //convert any runtime Exception while logging to a special class so we can avoid our own
+                    //exceptions for 99% less infinite loops!
+                    throw new DBLogException($e->getMessage());
+                }
+            }
         }
     }
 }

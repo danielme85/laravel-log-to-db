@@ -237,8 +237,8 @@ Then add to your AppServiceProvider (or another provider that calls the app boot
            LogToDB::model()->observe(LogObserver::class);
        }
    }
-``
- 
+```
+
 
 #### Adding tables/expanding collections 
 The Log handler for SQL expects the following schema:
