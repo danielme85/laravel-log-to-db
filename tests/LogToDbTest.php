@@ -1,6 +1,7 @@
 <?php
 
 use danielme85\LaravelLogToDB\LogToDB;
+use danielme85\LaravelLogToDB\Models\DBLogException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
@@ -15,7 +16,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         parent::setUp();
 
         $this->artisan('migrate', ['--database' => 'mysql']);
-
     }
 
     /**
@@ -121,12 +121,29 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testClassInit()
     {
-        $test = new LogToDB();
-        $this->assertInstanceOf('danielme85\LaravelLogToDB\LogToDB', $test);
+        $this->assertInstanceOf(LogToDB::class, app('laravel-log-to-db'));
+        $this->assertInstanceOf(LogToDB::class, new LogToDB());
 
         //Class works, now let's cleanup possible failed test
         LogToDB::model()->truncate();
         LogToDB::model('mongodb')->truncate();
+    }
+
+
+    /**
+     * @group config
+     */
+    public function testMissingConfig()
+    {
+        config()->set('database.default', 'bajs');
+        config()->set('logging.default', 'nein');
+
+        $this->expectException(DBLogException::class);
+        Log::info("Imma gonna faila?");
+
+        $this->expectException(InvalidArgumentException::class);
+        $logReader = LogToDB::model('spise', 'kebab', 'hverdag')->get()->toArray();
+        $this->assertEmpty($logReader);
     }
 
     /**
@@ -198,7 +215,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     /**
      * Test an exception error.
      *
-     * @group advanced
+     * @group exception
      */
     public function testException()
     {
@@ -206,6 +223,23 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         Log::warning("Error", ['exception' => $e, 'more' => 'infohere']);
         $log = LogToDB::model()->where('message', 'Error')->first();
         $this->assertNotEmpty($log->context);
+
+        $empty = new \Mockery\Exception();
+        Log::warning("Error", ['exception' => $empty]);
+        $log = LogToDB::model()->where('message', 'Error')->orderBy('id', 'DESC')->first();
+        $this->assertNotEmpty($log);
+
+        $this->expectException(DBLogException::class);
+        throw new DBLogException('Dont log this');
+    }
+
+    /**
+     *
+     *  @group exception
+     */
+    public function testExceptionIgnore()
+    {
+        $this->assertCount(0, LogToDB::model()->where('message', '=', 'Dont log this')->get()->toArray());
     }
 
     /**

@@ -56,7 +56,7 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
     {
         if (!empty($record)) {
             if (!empty($record['context']['exception'])
-                && strpos(get_class($record['context']['exception']), "DBLogException")) {
+                && get_class($record['context']['exception']) === DBLogException::class) {
                 //Do nothing if empty log record or an error Exception from itself.
             } else {
                 try {

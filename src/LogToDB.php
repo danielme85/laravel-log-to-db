@@ -4,6 +4,7 @@ namespace danielme85\LaravelLogToDB;
 
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\Models\DBLog;
+use danielme85\LaravelLogToDB\Models\DBLogException;
 use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
 
 /**
@@ -71,15 +72,9 @@ class LogToDB
         }
 
         if (empty($this->database)) {
-            new \ErrorException("Required configs missing: The LogToDB class needs a database correctly setup in the configs: databases.php and logtodb.php");
+            new DBLogException("Required configs missing: The LogToDB class needs a database correctly setup in the configs: databases.php and logtodb.php");
         }
 
-        //If the string 'default' is set for queue connection, then set null as this defaults to 'default' anyways.
-        if (!empty($this->config['queue'])) {
-            if ($this->config['queue_name'] === 'default') {
-                $this->config['queue_name'] = null;
-            }
-        }
     }
 
     /**
@@ -98,18 +93,16 @@ class LogToDB
 
         if (!empty($channel)) {
             $channels = config('logging.channels');
-            if (isset($channels[$channel])) {
-                if (isset($channels[$channel]['connection']) and !empty($channels[$channel]['connection'])) {
+            if (!empty($channels[$channel])) {
+                if (!empty($channels[$channel]['connection'])) {
                     $conn = $channels[$channel]['connection'];
                 }
-                if (isset($channels[$channel]['collection']) and !empty($channels[$channel]['collection'])) {
+                if (!empty($channels[$channel]['collection'])) {
                     $coll = $channels[$channel]['collection'];
                 }
             }
         } else {
-            if (!empty($connection)) {
-                $conn = $connection;
-            }
+            $conn = $connection;
             if (!empty($collection)) {
                 $coll = $collection;
             }
@@ -155,8 +148,11 @@ class LogToDB
     {
         if (!empty($this->connection)) {
             if ($this->config['queue']) {
-                if (isset($record['context']['exception']) && !empty($record['context']['exception'])) {
-                    if (strpos(get_class($record['context']['exception']), "Exception") !== false) {
+                if (!empty($record['context']['exception'])) {
+                    //Check for exception, they can't be queued.
+                    $exception = $record['context']['exception'];
+                    if (get_class($exception) === \Exception::class
+                        || is_subclass_of($exception, \Exception::class))  {
                         dispatch_now(new SaveNewLogEvent($this, $record));
                     }
                 }

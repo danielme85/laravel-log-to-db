@@ -52,26 +52,6 @@ trait LogToDbCreateObject
     }
 
     /**
-     * @param $value
-     */
-    public function setMessageAttribute($value)
-    {
-        if (config('logtodb.encrypt')) {
-            $this->attributes['message'] = encrypt($value);
-        } else {
-            $this->attributes['message'] = $value;
-        }
-    }
-
-    public function getMessageAttribute($value)
-    {
-        if (config('logtodb.encrypt')) {
-            return decrypt($value) ?? $value;
-        }
-
-        return $value;
-    }
-    /**
      * Context Accessor
      *
      * @param $value
@@ -103,44 +83,16 @@ trait LogToDbCreateObject
         if (isset($value['exception'])) {
             if (!empty($value['exception'])) {
                 $exception = $value['exception'];
-                if (strpos(get_class($exception), "Exception") !== false) {
+                if (get_class($exception) === \Exception::class
+                    || is_subclass_of($exception, \Exception::class)) {
                     $newexception = [];
                     $newexception['class'] = get_class($exception);
-                    if (method_exists($exception, 'getMessage')) {
-                        $newexception['message'] = $exception->getMessage();
-                    } else {
-                        $newexception['message'] = null;
-                    }
-                    if (method_exists($exception, 'getCode')) {
-                        $newexception['code'] = $exception->getCode();
-                    } else {
-                        $newexception['code'] = null;
-                    }
-                    if (method_exists($exception, 'getFile')) {
-                        $newexception['file'] = $exception->getFile();
-                    } else {
-                        $newexception['file'] = null;
-                    }
-                    if (method_exists($exception, 'getLine')) {
-                        $newexception['line'] = $exception->getLine();
-                    } else {
-                        $newexception['line'] = null;
-                    }
-                    if (method_exists($exception, 'getTrace')) {
-                        $newexception['trace'] = $exception->getTrace();
-                    } else {
-                        $newexception['trace'] = null;
-                    }
-                    if (method_exists($exception, 'getPrevious')) {
-                        $newexception['previous'] = $exception->getPrevious();
-                    } else {
-                        $newexception['previous'] = null;
-                    }
-                    if (method_exists($exception, 'getSeverity')) {
-                        $newexception['severity'] = $exception->getSeverity();
-                    } else {
-                        $newexception['severity'] = null;
-                    }
+                    $newexception['message'] = $exception->getMessage();
+                    $newexception['code'] = $exception->getCode();
+                    $newexception['file'] = $exception->getFile();
+                    $newexception['line'] = $exception->getLine();
+                    $newexception['trace'] = $exception->getTrace();
+                    $newexception['previous'] = $exception->getPrevious();
 
                     $value['exception'] = $newexception;
                 }
