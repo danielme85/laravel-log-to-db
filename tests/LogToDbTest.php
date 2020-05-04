@@ -260,13 +260,25 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         Queue::assertPushed(SaveNewLogEvent::class, 6);
 
         config()->set('logtodb.queue_name', 'logHandler');
+
+        Log::info("I'm supposed to be added to the queue...");
+        Log::warning("I'm supposed to be added to the queue...");
+        Log::debug("I'm supposed to be added to the queue...");
+
+        config()->set('logtodb.queue_name', null);
         config()->set('logtodb.queue_connection', 'default');
 
         Log::info("I'm supposed to be added to the queue...");
         Log::warning("I'm supposed to be added to the queue...");
         Log::debug("I'm supposed to be added to the queue...");
 
-        Queue::assertPushed(SaveNewLogEvent::class, 12);
+        config()->set('logtodb.queue_name', 'logHandler');
+
+        Log::info("I'm supposed to be added to the queue...");
+        Log::warning("I'm supposed to be added to the queue...");
+        Log::debug("I'm supposed to be added to the queue...");
+
+        Queue::assertPushed(SaveNewLogEvent::class, 24);
 
         config()->set('logtodb.queue', false);
 

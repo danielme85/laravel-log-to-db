@@ -80,38 +80,6 @@ trait LogToDbCreateObject
      */
     public function setContextAttribute(array $value)
     {
-        if (isset($value['exception'])) {
-            if (!empty($value['exception'])) {
-                $exception = $value['exception'];
-                if (get_class($exception) === \Exception::class
-                    || is_subclass_of($exception, \Exception::class)
-                    || strpos(get_class($exception), "Exception") !== false) {
-                    $newexception = [];
-                    if (method_exists($exception, 'getMessage')) {
-                        $newexception['message'] = $exception->getMessage();
-                    }
-                    if (method_exists($exception, 'getCode')) {
-                        $newexception['code'] = $exception->getCode();
-                    }
-                    if (method_exists($exception, 'getFile')) {
-                        $newexception['file'] = $exception->getFile();
-                    }
-                    if (method_exists($exception, 'getLine')) {
-                        $newexception['line'] = $exception->getLine();
-                    }
-                    if (method_exists($exception, 'getTrace')) {
-                        $newexception['trace'] = $exception->getTrace();
-                    }
-                    if (method_exists($exception, 'getPrevious')) {
-                        $newexception['previous'] = $exception->getPrevious();
-                    }
-                    if (method_exists($exception, 'getSeverity')) {
-                        $newexception['severity'] = $exception->getSeverity();
-                    }
-                    $value['exception'] = $newexception;
-                }
-            }
-        }
         $this->attributes['context'] = $this->jsonEncodeIfNotEmpty($value);
     }
 
@@ -144,7 +112,7 @@ trait LogToDbCreateObject
     private function jsonEncodeIfNotEmpty($value)
     {
         if (!empty($value)) {
-            return json_encode($value);
+            return @json_encode($value) ?? null;
         }
 
         return $value;
