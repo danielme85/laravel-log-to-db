@@ -55,13 +55,15 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
     protected function write(array $record): void
     {
         if (!empty($record)) {
-            if (!empty($record['context']['exception'])
-                && get_class($record['context']['exception']) === DBLogException::class) {
+            if (!empty($record['context']['exception']) &&
+                get_class($record['context']['exception']) === DBLogException::class) {
                 //Do nothing if empty log record or an error Exception from itself.
             } else {
                 try {
                     $log = new LogToDB($this->config);
                     $log->newFromMonolog($record);
+                } catch (DBLogException $e) {
+                    //do nothing if exception of self
                 } catch (\Exception $e) {
                     //convert any runtime Exception while logging to a special class so we can avoid our own
                     //exceptions for 99% less infinite loops!

@@ -146,11 +146,14 @@ class LogToDB
      */
     public function newFromMonolog(array $record)
     {
-        if (!empty($this->connection)) {
-            if (!empty($record['context']) && !empty($record['context']['exception'])) {
-                $record['context']['exception'] = $this->parseIfException($record['context']['exception']);
-            }
+        $detailed = $this->getConfig('detailed');
 
+        if (!empty($this->connection)) {
+            if ($detailed && !empty($record['context']) && !empty($record['context']['exception'])) {
+                $record['context'] = $this->parseIfException($record['context']);
+            } else if (!$detailed){
+                $record['context'] = null;
+            }
             if ($this->config['queue']) {
                 if (empty($this->config['queue_name']) && empty($this->config['queue_connection'])) {
                     dispatch(new SaveNewLogEvent($this, $record));
@@ -168,8 +171,7 @@ class LogToDB
             } else {
                 $model = $this->getModel();
                 $log = $model->generate(
-                    $record,
-                    $this->getConfig('detailed')
+                    $record
                 );
                 if ($log->save()) {
                     return true;
@@ -194,45 +196,52 @@ class LogToDB
     /**
      * Parse the exception class
      *
-     * @param mixed $exception
+     * @param mixed $context
      * @return mixed
      */
-    private function parseIfException($exception)
+    private function parseIfException($context)
     {
-        if (is_object($exception)) {
-            if (get_class($exception) === \Exception::class
-                || is_subclass_of($exception, \Exception::class)
-                || strpos(get_class($exception), "Exception") !== false) {
+        if (!empty($context['exception'])) {
+            $exception = $context['exception'];
+            if (is_object($exception)) {
+                if (get_class($exception) === \Exception::class
+                    || is_subclass_of($exception, \Exception::class)
+                    || strpos(get_class($exception), "Exception") !== false) {
 
-                $newexception = [];
+                    $newexception = [];
 
-                if (method_exists($exception, 'getMessage')) {
-                    $newexception['message'] = $exception->getMessage();
-                }
-                if (method_exists($exception, 'getCode')) {
-                    $newexception['code'] = $exception->getCode();
-                }
-                if (method_exists($exception, 'getFile')) {
-                    $newexception['file'] = $exception->getFile();
-                }
-                if (method_exists($exception, 'getLine')) {
-                    $newexception['line'] = $exception->getLine();
-                }
-                if (method_exists($exception, 'getTrace')) {
-                    $newexception['trace'] = $exception->getTraceAsString();
-                }
-                if (method_exists($exception, 'getPrevious')) {
-                    $newexception['previous'] = $exception->getPrevious();
-                }
-                if (method_exists($exception, 'getSeverity')) {
-                    $newexception['severity'] = $exception->getSeverity();
-                }
+                    if (method_exists($exception, 'getMessage')) {
+                        $newexception['message'] = $exception->getMessage();
+                    }
+                    if (method_exists($exception, 'getCode')) {
+                        $newexception['code'] = $exception->getCode();
+                    }
+                    if (method_exists($exception, 'getFile')) {
+                        $newexception['file'] = $exception->getFile();
+                    }
+                    if (method_exists($exception, 'getLine')) {
+                        $newexception['line'] = $exception->getLine();
+                    }
+                    if (method_exists($exception, 'getTrace')) {
+                        $newexception['trace'] = $exception->getTrace();
+                    }
+                    if (method_exists($exception, 'getPrevious')) {
+                        $newexception['previous'] = $exception->getPrevious();
+                    }
+                    if (method_exists($exception, 'getSeverity')) {
+                        $newexception['severity'] = $exception->getSeverity();
+                    }
 
-                $exception = $newexception;
+                    $context['exception'] = $newexception;
+                }
             }
         }
 
-        return $exception;
+        if (!empty($context)) {
+            return json_encode($context);
+        }
+
+        return null;
     }
 
 }

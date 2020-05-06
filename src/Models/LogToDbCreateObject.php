@@ -13,21 +13,16 @@ trait LogToDbCreateObject
      * Create a new log object
      *
      * @param array $record
-     * @param bool $detailed
      *
      * @return mixed
      */
-    public function generate(array $record, bool $detailed = false)
+    public function generate(array $record)
     {
         if (isset($record['message'])) {
             $this->message = $record['message'];
         }
-        if ($detailed) {
-            if (isset($record['context'])) {
-                if (!empty($record['context'])) {
-                    $this->context = $record['context'];
-                }
-            }
+        if (!empty($record['context'])) {
+            $this->context = $record['context'];
         }
         if (isset($record['level'])) {
             $this->level = $record['level'];
@@ -41,10 +36,8 @@ trait LogToDbCreateObject
         if (isset($record['datetime'])) {
             $this->datetime = $record['datetime'];
         }
-        if (isset($record['extra'])) {
-            if (!empty($record['extra'])) {
-                $this->extra = $record['extra'];
-            }
+        if (!empty($record['extra'])) {
+            $this->extra = $record['extra'];
         }
         $this->unix_time = time();
 
@@ -71,16 +64,6 @@ trait LogToDbCreateObject
     public function getExtraAttribute($value)
     {
         return $this->jsonDecodeIfNotEmpty($value);
-    }
-
-    /**
-     * Context Mutator
-     *
-     * @param array $value
-     */
-    public function setContextAttribute(array $value)
-    {
-        $this->attributes['context'] = $this->jsonEncodeIfNotEmpty($value);
     }
 
     /**
@@ -114,8 +97,6 @@ trait LogToDbCreateObject
         if (!empty($value)) {
             return @json_encode($value) ?? null;
         }
-
-        return $value;
     }
 
     /**

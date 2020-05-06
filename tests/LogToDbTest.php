@@ -205,11 +205,12 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     {
         //Test limited config, with limited rows and level
         Log::channel('limited')->debug("This message should not be stored because DEBUG is LOWER then WARNING");
-        $this->assertEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'DEBUG')->get()->toArray());
+        $this->assertEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'DEBUG')->get());
 
         //Test limited config, with limited rows and level
         Log::channel('limited')->warning("This message should be stored because WARNING = WARNING");
-        $this->assertNotEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'WARNING')->get()->toArray());
+        $this->assertNotEmpty(LogToDB::model('limited')->where('channel', 'limited')->where('level_name', 'WARNING')->get());
+
     }
 
     /**
@@ -427,6 +428,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testRemoves()
     {
+        $this->assertFalse(LogToDB::model()->removeOldestIfMoreThan(1000));
+
         Log::debug("This is an test DEBUG log event");
         Log::info("This is an test INFO log event");
         Log::notice("This is an test NOTICE log event");

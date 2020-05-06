@@ -3,6 +3,7 @@
 namespace danielme85\LaravelLogToDB\Jobs;
 
 use danielme85\LaravelLogToDB\Models\CreateLogFromRecord;
+use danielme85\LaravelLogToDB\Models\DBLogException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,7 +27,7 @@ class SaveNewLogEvent implements ShouldQueue
      * Create a new job instance.
      *
      * @param object $logToDb
-     * @param  array $record
+     * @param array $record
      * @return void
      */
     public function __construct($logToDb, $record)
@@ -42,12 +43,15 @@ class SaveNewLogEvent implements ShouldQueue
      */
     public function handle()
     {
-        $model = $this->logToDb->getModel();
-        $log = $model->generate(
-            $this->record,
-            $this->logToDb->getConfig('detailed')
-        );
-
-        $log->save();
+        try {
+            $model = $this->logToDb->getModel();
+            $log = $model->generate(
+                $this->record,
+                $this->logToDb->getConfig('detailed')
+            );
+            $log->save();
+        } catch (\Exception $e) {
+            throw new DBLogException($e->getMessage());
+        }
     }
 }
