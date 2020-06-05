@@ -77,6 +77,16 @@ trait LogToDbCreateObject
     }
 
     /**
+     * Context Mutator
+     *
+     * @param array $value
+     */
+    public function setContextAttribute($value)
+    {
+        $this->attributes['context'] = $this->jsonEncodeIfNotEmpty($value);
+    }
+
+    /**
      * Extra Mutator
      *
      * @param array $value

@@ -183,6 +183,18 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     }
 
     /**
+     * @group context
+     */
+    public function testContext()
+    {
+        Log::error("Im trying to add some context", ['whatDis?' => 'dis some context, should always be array']);
+        $log = LogToDB::model()->where('message', '=' , 'Im trying to add some context')->first();
+        $this->assertNotEmpty($log);
+        $this->assertStringContainsString("Im trying to add some context", $log->message);
+        $this->assertIsArray($log->context);
+    }
+
+    /**
      * Check to see if processors are adding extra content.
      *
      * @group basic

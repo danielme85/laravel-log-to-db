@@ -197,7 +197,7 @@ class LogToDB
      * Parse the exception class
      *
      * @param mixed $context
-     * @return mixed
+     * @return array
      */
     private function parseIfException($context)
     {
@@ -237,11 +237,7 @@ class LogToDB
             }
         }
 
-        if (!empty($context)) {
-            return json_encode($context);
-        }
-
-        return null;
+        return $context;
     }
 
 }
