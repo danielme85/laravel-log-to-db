@@ -223,10 +223,7 @@ class LogToDB
                         $newexception['line'] = $exception->getLine();
                     }
                     if (method_exists($exception, 'getTrace')) {
-                        $newexception['trace'] = $exception->getTrace();
-                    }
-                    if (method_exists($exception, 'getPrevious')) {
-                        $newexception['previous'] = $exception->getPrevious();
+                        $newexception['trace'] = $exception->getTraceAsString();
                     }
                     if (method_exists($exception, 'getSeverity')) {
                         $newexception['severity'] = $exception->getSeverity();
