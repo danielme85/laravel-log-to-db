@@ -49,7 +49,7 @@ class LogToDB
     function __construct($loggingConfig = [])
     {
         //Log default config if present
-        $this->config = $loggingConfig + config('logtodb');
+        $this->config = $loggingConfig + (config('logtodb') ?? []);
         $this->collection = $this->config['collection'] ?? 'log';
         $this->model = $this->config['model'] ?? null;
 
