@@ -7,11 +7,10 @@ use danielme85\LaravelLogToDB\Models\DBLogException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
 
 class SaveNewLogEvent implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable;
+    use InteractsWithQueue, Queueable;
 
     /**
      * @var object
@@ -50,7 +49,7 @@ class SaveNewLogEvent implements ShouldQueue
                 $this->logToDb->getConfig('detailed')
             );
             $log->save();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new DBLogException($e->getMessage());
         }
     }

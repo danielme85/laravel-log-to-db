@@ -64,7 +64,7 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
                     $log->newFromMonolog($record);
                 } catch (DBLogException $e) {
                     //do nothing if exception of self
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     //convert any runtime Exception while logging to a special class so we can avoid our own
                     //exceptions for 99% less infinite loops!
                     throw new DBLogException($e->getMessage());
