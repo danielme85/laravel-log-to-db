@@ -25,6 +25,15 @@ class ServiceProvider extends Provider {
      */
     public function boot()
     {
+        //config path is missing in Lumen
+        //https://gist.github.com/mabasic/21d13eab12462e596120
+        if (!function_exists('config_path')) {
+            function config_path($path = '')
+            {
+                return app()->basePath() . '/config' . ($path ? '/' . $path : $path);
+            }
+        }
+
         $this->loadMigrationsFrom(__DIR__.'/migrations');
         $this->mergeConfigFrom(__DIR__.'/config/logtodb.php', 'logtodb');
         $this->publishes([

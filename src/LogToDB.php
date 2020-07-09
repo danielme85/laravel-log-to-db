@@ -122,8 +122,7 @@ class LogToDB
         //Use custom model
         if (!empty($this->model)) {
             return new $this->model;
-        }
-        else if ($this->database['driver'] === 'mongodb') {
+        } else if ($this->database['driver'] === 'mongodb') {
             //MongoDB has its own Model
             $mongo = new DBLogMongoDB();
             $mongo->bind($this->connection, $this->collection);
@@ -151,7 +150,7 @@ class LogToDB
         if (!empty($this->connection)) {
             if ($detailed && !empty($record['context']) && !empty($record['context']['exception'])) {
                 $record['context'] = $this->parseIfException($record['context']);
-            } else if (!$detailed){
+            } else if (!$detailed) {
                 $record['context'] = null;
             }
             if ($this->config['queue']) {
@@ -205,8 +204,11 @@ class LogToDB
             $exception = $context['exception'];
             if (is_object($exception)) {
                 if (get_class($exception) === \Exception::class
+                    || get_class($exception) === \Throwable::class
                     || is_subclass_of($exception, \Exception::class)
-                    || strpos(get_class($exception), "Exception") !== false) {
+                    || is_subclass_of($exception, \Throwable::class)
+                    || strpos(get_class($exception), "Exception") !== false
+                    || strpos(get_class($exception), "Throwable") !== false) {
 
                     $newexception = [];
 

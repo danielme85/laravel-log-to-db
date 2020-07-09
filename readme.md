@@ -18,6 +18,7 @@ Uses Laravel native logging functionality.
 * [Custom Eloquent Model](#custom-eloquent-model)
 * [Log Cleanup](#log-cleanup)
 * [Processors](#processors)
+* [Lumen Innstallation](#lumen-installation)
 
 
 ## Installation
@@ -366,6 +367,106 @@ class PhpVersionProcessor implements ProcessorInterface {
     //....
 ]
 ```
+
+## Lumen Installation
+
+* Create a config folder in your projects root directory (if you don't already have one), then add a logging.php config file there.
+Use the [Laravel logging.php](https://github.com/laravel/laravel/blob/master/config/logging.php) config file as an example/starting point.
+You can also add all the other "missing" config files from the Laravel config folder to your Lumen project. 
+
+* To use these config files you have to load them in your applications bootstrap/app.php file (or add your own service provider file and load it in that same file).
+
+You also need to make sure that all the needed basic config values for logtodb is set by either: 
+* Copy over logtodb.php from the config folder of this addon,
+* or just add all your log-to-db options in your applications config/logging.php file (probably easiest). Just follow the 
+configuration example above under the [configuration](#configuration) section.
+  
+```
+/*
+|--------------------------------------------------------------------------
+| Register Config Files
+|--------------------------------------------------------------------------
+|
+| Now we will register the "app" configuration file. If the file exists in
+| your configuration directory it will be loaded; otherwise, we'll load
+| the default version. You may register other files below as needed.
+|
+*/
+
+$app->configure('app');
+//$app->configure('logtodb'); //if you copied over and want to use the base config from logtodb.
+$app->configure('logging');
+
+```
+
+Next step is to register the service provider, either in bootstrap/app.php or in app/Provider/AppServiceProvider.
+```
+/*
+|--------------------------------------------------------------------------
+| Register Service Providers
+|--------------------------------------------------------------------------
+|
+| Here we will register all of the application's service providers which
+| are used to bind services into the container. Service providers are
+| totally optional, so you are not required to uncomment this line.
+|
+*/
+
+// $app->register(App\Providers\AppServiceProvider::class);
+// $app->register(App\Providers\AuthServiceProvider::class);
+// $app->register(App\Providers\EventServiceProvider::class);
+$app->register(\danielme85\LaravelLogToDB\ServiceProvider::class);
+```
+
+After adding the service provider you should be able to run the database migration with:
+```
+php artisan migrate
+```
+Please note that you need a working db connection in Lumen at this point.
+
+And then maybe it works... ¯\_(ツ)_/¯
+
+#### Using worker queue to write log to db with Lumen
+You would need to set up a queue driver in Lumen before you can use the queue (default is: QUEUE_CONNECTION=sync, which is basically no queue).
+More info about the [queues in Lumen doc](https://lumen.laravel.com/docs/7.x/queues) (they are mostly the same as Laravel). 
+I would recommend the Redis queue driver but database should also work.
+
+#### How to make Redis work in Lumen (in general).
+install per command
+```
+ composer require predis/predis
+ composer require illuminate/redis
+```
+
+OR add to composer.json
+```
+...
+  "require": {
+        "predis/predis": "~1.0",
+        "illuminate/redis": "5.0.*",
+...
+```
+Or install other alternatives to predis. 
+
+Add service provider and enable eloquent in your bootstrap/app.php file (Eloquent only needed if you use the model/model helper class to fetch new log event);
+```
+
+$app->withFacades();
+$app->withEloquent();
+
+$app->register(Illuminate\Redis\RedisServiceProvider::class);
+if (!class_exists('Redis')) {
+    class_alias('Illuminate\Support\Facades\Redis', 'Redis');
+}
+```
+
+Now you can set your .env values to use Redis for the queue and cache if you so please:
+```
+REDIS_CLIENT=predis
+QUEUE_CONNECTION=redis
+CACHE_DRIVER=redis
+```  
+
 
 Development supported by:
 <br>
