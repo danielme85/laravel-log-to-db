@@ -18,7 +18,19 @@ Uses Laravel native logging functionality.
 * [Custom Eloquent Model](#custom-eloquent-model)
 * [Log Cleanup](#log-cleanup)
 * [Processors](#processors)
-* [Lumen Innstallation](#lumen-installation)
+* [Lumen Installation](#lumen-installation)
+
+| Version  | Tested with Laravel |
+| :---: | :---: |
+| v1.x  | 5.6+ |
+| v2.1  | 6.x |
+| v2.2  | 6.x |
+| v2.3  | 6.x |
+| v2.4  | 7.x |
+
+> :warning: this add-on is developed to be backwards compatible down to Laravel 5.6+, however as the above table indicates: 
+> testing of new releases is only performed on specified major Laravel versions.
+> Please note that using Laravel 7 with mongodb (optional), currently requires and alpha version of laravel-mongodb.
 
 
 ## Installation
