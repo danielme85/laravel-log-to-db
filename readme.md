@@ -7,7 +7,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
 [![CodeFactor](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db/badge)](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db)
 
-Custom Laravel 6.x and  5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
+Custom Laravel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
 Uses Laravel native logging functionality.
 
 
@@ -20,18 +20,15 @@ Uses Laravel native logging functionality.
 * [Processors](#processors)
 * [Lumen Installation](#lumen-installation)
 
-| Version  | Tested with Laravel |
-| :---: | :---: |
-| v1.x  | 5.6+ |
-| v2.1  | 6.x |
-| v2.2  | 6.x |
-| v2.3  | 6.x |
-| v2.4  | 7.x |
 
-> :warning: this add-on is developed to be backwards compatible down to Laravel 5.6+, however as the above table indicates: 
-> testing of new releases is only performed on specified major Laravel versions.
-> Please note that using Laravel 7 with mongodb (optional), currently requires and alpha version of laravel-mongodb.
+> :warning: this add-on is developed to be backwards compatible down to Laravel 5.6+ 
+> testing of new releases is only performed on the following major Laravel versions.
 
+| Version  | Laravel | PHP |
+| :---: | :---: | :---: |
+| v1.x  | 5.6+ | 7.1,7.2 |
+| v2.x  | 6.x | 7.2,7.3 |
+| v2.4  | 7.x |  7.2,7.3 |
 
 ## Installation
 Use the composer require or add to composer.json. 
@@ -170,6 +167,7 @@ $logsFromChannel = LogDB::model('database')->get(); //Get logs from the 'databas
 $logsFromChannel = LogDB::model('customname')->get(); //Get logs from the 'customname' log channel.
 $logsFromMysql   = LogToDB::model(null, 'mysql')->get(); //Get all logs from the mysql connection (from Laravel database config)
 $logsFromMongoDB = LogToDB::model(null, 'mongodb')->get(); //Get all logs from the mongodb connection (from Laravel database config)
+$logsFromMysqlTable  = LogToDB::model(null, 'mysql', 'table')->get(); //Get all logs from the mysql table: 'table'
 ```
 
 ## Custom Eloquent Model

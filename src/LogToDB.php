@@ -80,6 +80,9 @@ class LogToDB
     /**
      * Return a new LogToDB Module instance.
      *
+     * If specifying 'channel, 'connection' and 'collection' would not be needed (they will be extracted from channel).
+     * If specifying 'connection' and 'collection', 'channel' is not needed.
+     *
      * @param string|null $channel
      * @param string|null $connection
      * @param string|null $collection

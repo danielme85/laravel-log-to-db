@@ -49,24 +49,22 @@ class LogCleanerUpper extends Command
         $channels = $this->getLogToDbChannels();
 
         if (!empty($channels)) {
-            foreach ($channels as $channel) {
+            foreach ($channels as $name => $channel) {
                 $maxRecords = $channel['max_records'] ?? $config['purge_log_when_max_records']  ?? false;
                 $maxHours = $channel['max_hours'] ?? $config['purge_log_when_max_records'] ?? false;
-                $connection = $channel['connection'] ?? 'default';
-                $collection = $channel['collection'] ?? 'log';
 
                 //delete based on numbers of records
                 if (!empty($maxRecords) && $maxRecords > 0) {
-                    if (LogToDB::model($connection, $collection)->removeOldestIfMoreThan($maxRecords)) {
-                        $this->warn("Deleted oldest log records on channel: {$connection}->{$collection}, keep max number of records: {$maxRecords}");
+                    if (LogToDB::model($name)->removeOldestIfMoreThan($maxRecords)) {
+                        $this->warn("Deleted oldest records on log channel: {$name}, keep max number of records: {$maxRecords}");
                     }
                 }
 
                 //delete based on age
                 if (!empty($maxHours) && $maxHours > 0) {
                     $time = Carbon::now()->subHours($maxHours)->toDateTimeString();
-                    if (LogToDB::model($connection, $collection)->removeOlderThan($time)) {
-                        $this->warn("Deleted log records on channel: {$connection}->{$collection}, older than: {$time}");
+                    if (LogToDB::model($name)->removeOlderThan($time)) {
+                        $this->warn("Deleted oldest records on log channel: {$name}, older than: {$time}");
                     }
                 }
             }
@@ -81,9 +79,10 @@ class LogCleanerUpper extends Command
         $list = [];
         $logging = config('logging');
         if (!empty($logging) && isset($logging['channels']) && !empty($logging['channels'])) {
-            foreach ($logging['channels'] as $log) {
-                if (isset($log['via']) && $log['via'] === LogToDbHandler::class) {
-                    $list[] = $log;
+            foreach ($logging['channels'] as $name => $channel) {
+                //Only look for the relevant logging class in the config.
+                if (isset($channel['via']) && $channel['via'] === LogToDbHandler::class) {
+                    $list[$name] = $channel;
                 }
             }
         }
