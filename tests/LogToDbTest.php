@@ -245,6 +245,25 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->expectException(DBLogException::class);
         throw new DBLogException('Dont log this');
     }
+    
+    /**
+     * Test exception when expected format is wrong.
+     *
+     * @group exception
+     */
+    public function testExceptionWrongFormat()
+    {
+        $e = [
+            'message' => 'Array instead exception',
+            'code'    => 0,
+            'file'    => __FILE__,
+            'line'    => __LINE__,
+            'trace'   => debug_backtrace(),
+        ];
+        Log::warning("Error", ['exception' => $e, 'more' => 'infohere']);
+        $log = LogToDB::model()->where('message', 'Error')->first();
+        $this->assertNotEmpty($log->context);
+    }
 
     /**
      *

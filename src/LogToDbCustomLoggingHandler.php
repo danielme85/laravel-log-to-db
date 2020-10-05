@@ -55,7 +55,7 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
     protected function write(array $record): void
     {
         if (!empty($record)) {
-            if (!empty($record['context']['exception']) &&
+            if (!empty($record['context']['exception']) && is_object($record['context']['exception']) &&
                 get_class($record['context']['exception']) === DBLogException::class) {
                 //Do nothing if empty log record or an error Exception from itself.
             } else {
