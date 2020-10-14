@@ -141,7 +141,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->expectException(DBLogException::class);
         Log::info("Imma gonna faila?");
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(Exception::class);
         $logReader = LogToDB::model('spise', 'kebab', 'hverdag')->get()->toArray();
         $this->assertEmpty($logReader);
     }
