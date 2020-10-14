@@ -21,14 +21,8 @@ Uses Laravel native logging functionality.
 * [Lumen Installation](#lumen-installation)
 
 
-> :warning: this add-on is developed to be backwards compatible down to Laravel 5.6+ 
-> testing of new releases is only performed on the following major Laravel versions.
-
-| Version  | Laravel | PHP |
-| :---: | :---: | :---: |
-| v1.x  | 5.6+ | 7.1,7.2 |
-| v2.x  | 6.x | 7.2,7.3 |
-| v2.4  | 7.x |  7.2,7.3 |
+> :warning: This project should be backwards compatible down to and including Laravel 5.6 and PHP 7.1.
+> <br>However testing of current version and master branch is only with PHP 7.3/7.4 and Laravel 8.
 
 ## Installation
 Use the composer require or add to composer.json. 
@@ -41,8 +35,16 @@ If you are using SQL database server to store log events you would need to run t
 php artisan migrate
 ```
 
+
+<i>For optional MongoDB support you need to install jenseegers/mongodb addon to Laravel</i>
+```
+#Optional mongodb support, not required!
+
+composer require jenssegers/mongodb
+```
+
 ## Configuration
-Starting with Laravel 5.6 you will have a new settings file: "config/logging.php". 
+Starting with Laravel 5.6 you will have a new config file: "config/logging.php". 
 You will need to add an array under 'channels' for Log-to-DB here like so:
 ```php
 'channels' => [

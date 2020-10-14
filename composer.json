@@ -1,6 +1,6 @@
 {
     "name": "danielme85/laravel-log-to-db",
-    "description": "Custom Larvel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. Uses Laravel native logging functionality.",
+    "description": "Custom Laravel  Log channel handler that can store log events to SQL or MongoDB databases. Uses Laravel native logging functionality.",
     "keywords": ["laravel", "logging", "log", "database", "db", "mysql", "sql", "mongodb"],
     "type": "library",
     "license": "MIT",
@@ -16,8 +16,10 @@
     },
     "require-dev": {
         "orchestra/testbench": ">=5.0",
-        "jenssegers/mongodb": ">=4.0",
         "mockery/mockery": "^1.0"
+    },
+    "suggest": {
+        "jenssegers/mongodb": "Adds support for MongoDB in Laravel/Eloquent"
     },
     "autoload": {
         "psr-4": {
@@ -34,5 +36,5 @@
             }
         }
     },
-    "minimum-stability": "alpha"
+    "minimum-stability": "stable"
 }
