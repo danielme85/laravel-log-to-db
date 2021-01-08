@@ -45,6 +45,7 @@ class LogToDB
      * LogToDB constructor.
      *
      * @param array $loggingConfig config values;.
+     * @throws DBLogException
      */
     function __construct($loggingConfig = [])
     {
@@ -72,7 +73,7 @@ class LogToDB
         }
 
         if (empty($this->database)) {
-            new DBLogException("Required configs missing: The LogToDB class needs a database correctly setup in the configs: databases.php and logtodb.php");
+            throw new DBLogException("Required configs missing: The LogToDB class needs a database correctly setup in the configs: databases.php and logtodb.php");
         }
 
     }
