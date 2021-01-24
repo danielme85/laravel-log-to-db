@@ -30,7 +30,12 @@ Use the composer require or add to composer.json.
 require danielme85/laravel-log-to-db
 ```
 
-If you are using SQL database server to store log events you would need to run the migrations first. The MongoDB driver does not require the migration.
+If you are using SQL database server to store log events you can use the migration included. The MongoDB driver does not require the migration.
+Copy the migration file for log the database table to your app (you can also do any changes you want or manually copy this file your database/migrations folder).
+```
+php artisan vendor:publish --tag=migrations --provider="danielme85\LaravelLogToDB\ServiceProvider"
+```
+Run the Laravel migration artisan command.
 ```
 php artisan migrate
 ```
@@ -44,7 +49,7 @@ composer require jenssegers/mongodb
 ```
 
 ## Configuration
-Starting with Laravel 5.6 you will have a new config file: "config/logging.php". 
+Starting with Laravel 5.6 and later, you will have a new config file: "config/logging.php". 
 You will need to add an array under 'channels' for Log-to-DB here like so:
 ```php
 'channels' => [
@@ -90,7 +95,7 @@ More info about some of these options: https://laravel.com/docs/6.x/logging#cust
 There are some default settings and more information about configuring the logger in the 'logtodb.php' config file.
 This could be copied to your project if you would like edit it with the vendor publish command.
 ```
-php artisan vendor:publish --provider="danielme85\LaravelLogToDB\ServiceProvider"
+php artisan vendor:publish --tag=config --provider="danielme85\LaravelLogToDB\ServiceProvider"
 ```
 You can also change these settings in your env file.
 ```

@@ -8,6 +8,8 @@ use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 
 class LogToDbTest extends Orchestra\Testbench\TestCase
 {
+    protected $migrated = false;
+
     /**
      * Setup the test environment.
      */
@@ -15,7 +17,14 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     {
         parent::setUp();
 
-        $this->artisan('migrate', ['--database' => 'mysql']);
+        if (!$this->migrated) {
+            $this->loadMigrationsFrom(__DIR__ . '/../src/migrations');
+            if ($this->artisan('migrate', [
+                '--database' => 'mysql'])) {
+                $this->migrated = true;
+            }
+
+        }
     }
 
     /**
@@ -27,27 +36,30 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     protected function getEnvironmentSetUp($app)
     {
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../', '.env.testing');
+        $dotenv->load();
+
         $app['config']->set('database.default', 'mysql');
         $app['config']->set('database.connections',
             ['mysql' => [
                 'driver' => 'mysql',
-                'host' => '127.0.0.1',
-                'port' => 3306,
-                'database' => 'testing',
-                'username' => 'travis',
-                'password' => '',
+                'host' => env('DB_HOST', '127.0.0.1'),
+                'port' => env('DB_PORT', 3306),
+                'database' => env('DB_DATABASE', 'testing'),
+                'username' => env('DB_USER', 'travis'),
+                'password' => env('DB_PASSWORD', ''),
                 'charset' => 'utf8',
                 'collation' => 'utf8_unicode_ci',
             ],
                 'mongodb' => [
                     'driver' => 'mongodb',
-                    'host' => '127.0.0.1',
-                    'port' => 27017,
-                    'database' => 'testing',
-                    'username' => '',
-                    'password' => '',
+                    'host' => env('MDB_HOST', '127.0.0.1'),
+                    'port' => env('MDB_PORT', 27017),
+                    'database' => env('MDB_DATABASE', 'testing'),
+                    'username' => env('MDB_USER', ''),
+                    'password' => env('MDB_PASSWORD', ''),
                     'options' => [
-                        //'database' => 'admin' // sets the authentication database required by mongo 3
+                        'database' => 'admin' // sets the authentication database required by mongo 3
                     ]
                 ],
             ]);
@@ -131,22 +143,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
 
 
     /**
-     * @group config
-     */
-    public function testMissingConfig()
-    {
-        config()->set('database.default', 'bajs');
-        config()->set('logging.default', 'nein');
-
-        $this->expectException(DBLogException::class);
-        Log::info("Imma gonna faila?");
-
-        $this->expectException(Exception::class);
-        $logReader = LogToDB::model('spise', 'kebab', 'hverdag')->get()->toArray();
-        $this->assertEmpty($logReader);
-    }
-
-    /**
      * Run basic log levels
      *
      * @group basic
@@ -201,6 +197,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testProcessors()
     {
+        Log::info("hello");
         $log = LogToDB::model()->orderBy('created_at', 'desc')->first()->toArray();
         $this->assertNotEmpty($log['extra']);
         $this->assertNotEmpty($log['extra']['memory_usage']);
@@ -349,6 +346,15 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testModelInteraction()
     {
+
+        for ($i=1; $i<=10; $i++) {
+            Log::debug("This is debug log message...");
+        }
+        for ($i=1; $i<=10; $i++) {
+            Log::info("This is info log message...");
+        }
+
+
         $model = LogToDB::model();
 
         $log = $model->first();
@@ -362,6 +368,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertIsArray($log->extra);
         $this->assertNotEmpty($log->created_at);
         $this->assertNotEmpty($log->updated_at);
+        $this->assertDatabaseCount('log', 20);
+
 
         //Get all
         $all = $model->get();
@@ -370,6 +378,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(10, $logs);
 
         $model = LogToDB::model('database');
         //Get all
@@ -379,6 +388,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(10, $logs);
+
 
         $model = LogToDB::model(null, 'mysql');
         //Get all
@@ -397,6 +408,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(10, $logs);
 
         //Same tests for mongoDB
         $modelMongo = LogToDB::model('mongodb');
@@ -436,6 +448,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testStandAloneModels()
     {
+        Log::info("This is a info log message...");
         $this->assertNotEmpty(LogSql::get()->toArray());
         $this->assertNotEmpty(LogMongo::get()->toArray());
     }
