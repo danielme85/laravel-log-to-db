@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 jobs:
   test:
@@ -40,4 +40,7 @@ jobs:
           name: Upload CodeCov.io Data
           command: bash <(curl -s https://codecov.io/bash) -F unittests
           when: on_success
-          
+workflows:
+  test:
+    jobs:
+      - test
