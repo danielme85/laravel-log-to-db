@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  codecov: codecov/codecov@1.1.3
-
 jobs:
   test:
     docker:
@@ -38,8 +35,9 @@ jobs:
           name: Run phpunit
           command: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover=coverage.xml
 
-      - codecov/upload:
-          file: coverage.xml
+      - run:
+          name: Upload coverage report
+          command: bash <(curl -s https://codecov.io/bash)
 workflows:
   test:
     jobs:
