@@ -37,7 +37,7 @@ jobs:
 
       - run:
           name: Upload coverage report
-          command: bash '<(curl -s https://codecov.io/bash)'
+          command: '<(curl -s https://codecov.io/bash)'
 workflows:
   test:
     jobs:
