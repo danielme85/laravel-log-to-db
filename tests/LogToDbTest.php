@@ -46,7 +46,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'host' => env('DB_HOST', '127.0.0.1'),
                 'port' => env('DB_PORT', 3306),
                 'database' => env('DB_DATABASE', 'testing'),
-                'username' => env('DB_USER', 'travis'),
+                'username' => env('DB_USER', 'root'),
                 'password' => env('DB_PASSWORD', ''),
                 'charset' => 'utf8',
                 'collation' => 'utf8_unicode_ci',
