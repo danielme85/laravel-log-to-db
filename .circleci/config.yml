@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: circleci/php:7.4.8
+      - image: danielme/laravel-cli:latest
       - image: circleci/mongo:latest
       - image: circleci/mysql:5.7
     environment:
@@ -14,17 +14,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install PHP extensions
-          command: sudo apt update && sudo apt-get install libxml2-dev default-mysql-client && sudo -E docker-php-ext-install pdo_mysql bcmath soap
-      - run:
-          name: Compile and install mongodb PHP extension
-          command: sudo pecl install -f mongodb && sudo "extension=mongodb.so" >> /etc/php/7.4/cli/php.ini
-      - run:
           name: Wait for Database Connection
           # preinstalled in circleci/* docker image
           command: dockerize -wait tcp://localhost:3306 -timeout 1m
       - run: mysql -h 127.0.0.1 -u root -e "create database testing"
-      - run: sudo composer self-update
       - run: composer install --no-interaction
       - run: composer require jenssegers/mongodb
       - restore_cache:
