@@ -33,7 +33,7 @@ jobs:
               key: composer-v1-{{ checksum "composer.lock" }}
               paths:
                 - vendor
-                -
+      
       - run: ./vendor/bin/pcov clobber
 
       - run:
