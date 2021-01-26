@@ -13,8 +13,9 @@ jobs:
     working_directory: ~/app
     steps:
       - checkout
-      - run: sudo apt install -y mysql-client
-      - run: sudo docker-php-ext-install zip mongodb
+      - run:
+          name: Install PHP extensions
+          command: sudo apt update && sudo apt-get install libxml2-dev default-mysql-client && sudo -E docker-php-ext-install pdo_mysql bcmath soap mongodb
       - run:
           name: Wait for Database Connection
           # preinstalled in circleci/* docker image
