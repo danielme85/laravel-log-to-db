@@ -34,11 +34,17 @@ class ServiceProvider extends Provider {
             }
         }
 
-        $this->loadMigrationsFrom(__DIR__.'/migrations');
+        //Merge config first, then keep a publish option
         $this->mergeConfigFrom(__DIR__.'/config/logtodb.php', 'logtodb');
         $this->publishes([
             __DIR__.'/config/logtodb.php' => config_path('logtodb.php'),
-        ]);
+        ], 'config');
+
+        //Publish the migration
+        $this->publishes([
+            __DIR__.'/../database/migrations/' => database_path('migrations')
+        ], 'migrations');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 LogCleanerUpper::class,
