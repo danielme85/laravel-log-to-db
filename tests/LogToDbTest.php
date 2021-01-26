@@ -18,6 +18,16 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         parent::setUp();
 
         if (!$this->migrated) {
+            $this->artisan('vendor:publish', [
+                '--tag' => 'migrations',
+                '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
+            ]);
+
+            $this->artisan('vendor:publish', [
+                '--tag' => 'config',
+                '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
+            ]);
+
             $this->loadMigrationsFrom('/migrations');
             if ($this->artisan('migrate', [
                 '--database' => 'mysql'])) {
@@ -134,15 +144,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testVendorPublish()
     {
-        $this->artisan('vendor:publish', [
-            '--tag' => 'migrations',
-            '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
-        ])->assertExitCode(0);
 
-        $this->artisan('vendor:publish', [
-            '--tag' => 'config',
-            '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
-        ])->assertExitCode(0);
     }
 
     /**
