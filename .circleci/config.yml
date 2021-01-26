@@ -40,7 +40,4 @@ jobs:
           name: Upload CodeCov.io Data
           command: bash <(curl -s https://codecov.io/bash) -F unittests
           when: on_success
-workflows:
-  test:
-    jobs:
-      - test
+          
