@@ -10,22 +10,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
 {
     protected $migrated = false;
 
-    /**
-     * Setup the test environment.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        if (!$this->migrated) {
-            $this->loadMigrationsFrom(__DIR__ . '/../src/migrations');
-            if ($this->artisan('migrate', [
-                '--database' => 'mysql'])) {
-                $this->migrated = true;
-            }
-
-        }
-    }
 
     /**
      * Define environment setup.
@@ -142,6 +126,12 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
             '--tag' => 'config',
             '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
         ])->assertExitCode(0);
+    }
+
+    public function testMigration()
+    {
+        $this->artisan('migrate', [
+            '--database' => 'mysql'])->assertExitCode(0);
     }
 
     /**
@@ -374,6 +364,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testModelInteraction()
     {
+        LogToDB::model()->truncate();
+        LogToDB::model('mongodb')->truncate();
 
         for ($i=1; $i<=10; $i++) {
             Log::debug("This is debug log message...");
