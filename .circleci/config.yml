@@ -21,7 +21,7 @@ jobs:
           # preinstalled in circleci/* docker image
           command: dockerize -wait tcp://localhost:3306 -timeout 1m
       - run: mysql -h 127.0.0.1 -u root -e "create database testing"
-      - run: composer self-update
+      - run: sudo composer self-update
       - run: composer install --no-interaction
       - run: composer require jenssegers/mongodb
       - restore_cache:
