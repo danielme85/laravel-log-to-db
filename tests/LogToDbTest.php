@@ -18,17 +18,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         parent::setUp();
 
         if (!$this->migrated) {
-            $this->artisan('vendor:publish', [
-                '--tag' => 'migrations',
-                '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
-            ]);
-
-            $this->artisan('vendor:publish', [
-                '--tag' => 'config',
-                '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
-            ]);
-
-            $this->loadMigrationsFrom('/migrations');
+            $this->loadMigrationsFrom(__DIR__.'/../src/migrations');
             if ($this->artisan('migrate', [
                 '--database' => 'mysql'])) {
                 $this->migrated = true;
@@ -138,16 +128,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     }
 
     /**
-     * Test the vendor:publish command for the migration file.
-     *
-     * @group publish
-     */
-    public function testVendorPublish()
-    {
-
-    }
-
-    /**
      * Basic test to see if class can be instanced.
      *
      * @group basic
@@ -161,7 +141,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         LogToDB::model()->truncate();
         LogToDB::model('mongodb')->truncate();
     }
-
 
     /**
      * Run basic log levels
@@ -465,15 +444,14 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
         $this->assertCount(10, $logs);
-
     }
-
 
     /**
      * $group model
      */
     public function testStandAloneModels()
     {
+        Log::info("This is a info log message...");
         $this->assertNotEmpty(LogSql::get()->toArray());
         $this->assertNotEmpty(LogMongo::get()->toArray());
     }
