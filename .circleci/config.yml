@@ -36,7 +36,7 @@ jobs:
       
       - run:
           name: Run phpunit
-          command: XDEBUG_MODE=coverage -dpcov.enabled=1 -dpcov.directory="./app" -dpcov.suffix=".php" vendor/bin/phpunit --coverage-clover=coverage.xml
+          command: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover=coverage.xml
 
       - codecov/upload:
           file: coverage.xml
