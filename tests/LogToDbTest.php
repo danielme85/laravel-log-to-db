@@ -18,12 +18,11 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         parent::setUp();
 
         if (!$this->migrated) {
-            $this->loadMigrationsFrom(__DIR__ . '/../src/migrations');
+            $this->loadMigrationsFrom(__DIR__.'/../src/migrations');
             if ($this->artisan('migrate', [
                 '--database' => 'mysql'])) {
                 $this->migrated = true;
             }
-
         }
     }
 
@@ -106,6 +105,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'name' => 'limited',
             ]
         ]);
+
+        $app['config']->set('logtodb', include __DIR__.'/../src/config/logtodb.php');
     }
 
     /**
@@ -127,24 +128,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     }
 
     /**
-     * Test the vendor:publish command for the migration file.
-     *
-     * @group publish
-     */
-    public function testVendorPublish()
-    {
-        $this->artisan('vendor:publish', [
-            '--tag' => 'migrations',
-            '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
-        ])->assertExitCode(0);
-
-        $this->artisan('vendor:publish', [
-            '--tag' => 'config',
-            '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
-        ])->assertExitCode(0);
-    }
-
-    /**
      * Basic test to see if class can be instanced.
      *
      * @group basic
@@ -158,7 +141,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         LogToDB::model()->truncate();
         LogToDB::model('mongodb')->truncate();
     }
-
 
     /**
      * Run basic log levels
@@ -356,16 +338,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertNotEmpty($logToDb->model()->where('message', '=', 'job-test')->get());
     }
 
-    /**
-     * Test exception on save new log job.
-     * @group job
-     */
-    public function testExceptionOnSaveNewLogEvent()
-    {
-        $this->expectException(DBLogException::class);
-        $job = new SaveNewLogEvent(false, []);
-        $job->handle();
-    }
 
     /**
      * Test model interaction
@@ -374,6 +346,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testModelInteraction()
     {
+        LogToDB::model()->truncate();
+        LogToDB::model('mongodb')->truncate();
 
         for ($i=1; $i<=10; $i++) {
             Log::debug("This is debug log message...");
@@ -447,6 +421,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(10, $logs);
 
         //Same tests for mongoDB
         $modelMongo = LogToDB::model('mongodb', 'mongodb', 'log');
@@ -457,6 +432,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(10, $logs);
 
         //Same tests for mongoDB
         $modelMongo = LogToDB::model(null, 'mongodb');
@@ -467,9 +443,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
-
+        $this->assertCount(10, $logs);
     }
-
 
     /**
      * $group model
