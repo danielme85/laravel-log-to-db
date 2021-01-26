@@ -17,19 +17,10 @@ jobs:
           name: Wait for Database Connection
           command: dockerize -wait tcp://localhost:3306 -timeout 1m
       - run: mysql -h 127.0.0.1 -u root -e "create database testing"
-
-      - restore_cache:
-          keys:
-            - composer-v1-{{ checksum "composer.json" }}
       
       - run: composer install --no-interaction
       - run: composer require jenssegers/mongodb --dev
       - run: composer require pcov/clobber --dev
-
-      - save_cache:
-          key: composer-v1-{{ checksum "composer.json" }}
-          paths:
-            - vendor
       
       - run:
           name: Run phpunit
