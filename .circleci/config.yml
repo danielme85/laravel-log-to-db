@@ -15,7 +15,10 @@ jobs:
       - checkout
       - run:
           name: Install PHP extensions
-          command: sudo apt update && sudo apt-get install libxml2-dev default-mysql-client && sudo -E docker-php-ext-install pdo_mysql bcmath soap && sudo pecl install -f mongodb
+          command: sudo apt update && sudo apt-get install libxml2-dev default-mysql-client && sudo -E docker-php-ext-install pdo_mysql bcmath soap
+      - run:
+          name: Compile and install mongodb PHP extension
+          command: sudo pecl install -f mongodb && sudo "extension=mongodb.so" >> /etc/php/7.4/cli/php.ini
       - run:
           name: Wait for Database Connection
           # preinstalled in circleci/* docker image
