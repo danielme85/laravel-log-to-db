@@ -1,0 +1,42 @@
+version: 2
+
+jobs:
+  test:
+    docker:
+      - image: circleci/php:7.4.8
+
+      - image: circleci/mysql:5.7
+          environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: yes
+            MYSQL_ROOT_PASSWORD: ''
+
+      working_directory: ~/app
+      steps:
+        - checkout
+        - run:
+            name: Wait for Database Connection
+            # preinstalled in circleci/* docker image
+            command: dockerize -wait tcp://localhost:3306 -timeout 1m
+        - run: mysql -h 127.0.0.1 -u root -e "create database testing"
+        - run: pecl install -f mongodb
+        - run: composer self-update
+        - run: composer install --no-interaction
+        - run: composer require jenssegers/mongodb
+        - restore_cache:
+          keys:
+           - composer-v1-{{ checksum "composer.lock" }}
+           - composer-v1-
+           - run: composer install
+        - save_cache:
+              key: composer-v1-{{ checksum "composer.lock" }}
+              paths:
+                - vendor
+        - run:
+            name: Run phpunit
+            # preinstalled in circleci/* docker image
+            command: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover=coverage.xml
+
+        - run:
+            name: Upload CodeCov.io Data
+            command: bash <(curl -s https://codecov.io/bash) -F unittests
+            when: success
