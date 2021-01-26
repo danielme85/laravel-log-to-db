@@ -127,6 +127,24 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     }
 
     /**
+     * Test the vendor:publish command for the migration file.
+     *
+     * @group publish
+     */
+    public function testVendorPublish()
+    {
+        $this->artisan('vendor:publish', [
+            '--tag' => 'migrations',
+            '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
+        ])->assertExitCode(0);
+
+        $this->artisan('vendor:publish', [
+            '--tag' => 'config',
+            '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
+        ])->assertExitCode(0);
+    }
+
+    /**
      * Basic test to see if class can be instanced.
      *
      * @group basic
@@ -338,6 +356,16 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertNotEmpty($logToDb->model()->where('message', '=', 'job-test')->get());
     }
 
+    /**
+     * Test exception on save new log job.
+     * @group job
+     */
+    public function testExceptionOnSaveNewLogEvent()
+    {
+        $this->expectException(DBLogException::class);
+        $job = new SaveNewLogEvent(false, []);
+        $job->handle();
+    }
 
     /**
      * Test model interaction
