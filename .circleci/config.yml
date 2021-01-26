@@ -13,12 +13,13 @@ jobs:
     working_directory: ~/app
     steps:
       - checkout
+      - run: sudo apt install -y mysql-client
+      - run: sudo docker-php-ext-install zip mongodb
       - run:
           name: Wait for Database Connection
           # preinstalled in circleci/* docker image
           command: dockerize -wait tcp://localhost:3306 -timeout 1m
       - run: mysql -h 127.0.0.1 -u root -e "create database testing"
-      - run: pecl install -f mongodb
       - run: composer self-update
       - run: composer install --no-interaction
       - run: composer require jenssegers/mongodb
