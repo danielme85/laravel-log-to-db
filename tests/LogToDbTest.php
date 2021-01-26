@@ -10,6 +10,21 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
 {
     protected $migrated = false;
 
+    /**
+     * Setup the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (!$this->migrated) {
+            $this->loadMigrationsFrom('/migrations');
+            if ($this->artisan('migrate', [
+                '--database' => 'mysql'])) {
+                $this->migrated = true;
+            }
+        }
+    }
 
     /**
      * Define environment setup.
@@ -90,6 +105,8 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'name' => 'limited',
             ]
         ]);
+
+        $app['config']->set('logtodb', include __DIR__.'/../src/config/logtodb.php');
     }
 
     /**
@@ -126,12 +143,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
             '--tag' => 'config',
             '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
         ])->assertExitCode(0);
-    }
-
-    public function testMigration()
-    {
-        $this->artisan('migrate', [
-            '--database' => 'mysql'])->assertExitCode(0);
     }
 
     /**
@@ -346,16 +357,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertNotEmpty($logToDb->model()->where('message', '=', 'job-test')->get());
     }
 
-    /**
-     * Test exception on save new log job.
-     * @group job
-     */
-    public function testExceptionOnSaveNewLogEvent()
-    {
-        $this->expectException(DBLogException::class);
-        $job = new SaveNewLogEvent(false, []);
-        $job->handle();
-    }
 
     /**
      * Test model interaction
@@ -439,6 +440,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(10, $logs);
 
         //Same tests for mongoDB
         $modelMongo = LogToDB::model('mongodb', 'mongodb', 'log');
@@ -449,6 +451,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(10, $logs);
 
         //Same tests for mongoDB
         $modelMongo = LogToDB::model(null, 'mongodb');
@@ -459,6 +462,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(10, $logs);
 
     }
 
@@ -468,7 +472,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testStandAloneModels()
     {
-        Log::info("This is a info log message...");
         $this->assertNotEmpty(LogSql::get()->toArray());
         $this->assertNotEmpty(LogMongo::get()->toArray());
     }
