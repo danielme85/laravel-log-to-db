@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  codecov: codecov/codecov@1.1.3
+
 jobs:
   test:
     docker:
@@ -15,29 +18,30 @@ jobs:
       - checkout
       - run:
           name: Wait for Database Connection
-          # preinstalled in circleci/* docker image
           command: dockerize -wait tcp://localhost:3306 -timeout 1m
       - run: mysql -h 127.0.0.1 -u root -e "create database testing"
-      - run: composer install --no-interaction
-      - run: composer require jenssegers/mongodb
+
       - restore_cache:
           keys:
             - composer-v1-{{ checksum "composer.lock" }}
       
-      - run: composer install
-      
+      - run: composer install --no-interaction
+      - run: composer require jenssegers/mongodb --dev
+      - run: composer require pcov/clobber --dev
+
       - save_cache:
               key: composer-v1-{{ checksum "composer.lock" }}
               paths:
                 - vendor
-      - run:
-          name: Run phpunit
-          command: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover=coverage.xml
+                -
+      - run: ./vendor/bin/pcov clobber
 
       - run:
-          name: Upload CodeCov.io Data
-          command: bash <(curl -s https://codecov.io/bash) -F unittests
-          when: on_success
+          name: Run phpunit
+          command: XDEBUG_MODE=coverage -dpcov.enabled=1 -dpcov.directory="./app" -dpcov.suffix=".php" vendor/bin/phpunit --coverage-clover=coverage.xml
+
+      - codecov/upload:
+          file: coverage.xml
 workflows:
   test:
     jobs:
