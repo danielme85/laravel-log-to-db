@@ -46,7 +46,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'host' => env('DB_HOST', '127.0.0.1'),
                 'port' => env('DB_PORT', 3306),
                 'database' => env('DB_DATABASE', 'testing'),
-                'username' => env('DB_USER', 'travis'),
+                'username' => env('DB_USER', 'root'),
                 'password' => env('DB_PASSWORD', ''),
                 'charset' => 'utf8',
                 'collation' => 'utf8_unicode_ci',
@@ -124,6 +124,24 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
             'danielme85\LaravelLogToDB\ServiceProvider',
             'Jenssegers\Mongodb\MongodbServiceProvider',
         ];
+    }
+
+    /**
+     * Test the vendor:publish command for the migration file.
+     *
+     * @group publish
+     */
+    public function testVendorPublish()
+    {
+        $this->artisan('vendor:publish', [
+            '--tag' => 'migrations',
+            '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
+        ])->assertExitCode(0);
+
+        $this->artisan('vendor:publish', [
+            '--tag' => 'config',
+            '--provider' => 'danielme85\LaravelLogToDB\ServiceProvider'
+        ])->assertExitCode(0);
     }
 
     /**
@@ -338,6 +356,16 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertNotEmpty($logToDb->model()->where('message', '=', 'job-test')->get());
     }
 
+    /**
+     * Test exception on save new log job.
+     * @group job
+     */
+    public function testExceptionOnSaveNewLogEvent()
+    {
+        $this->expectException(DBLogException::class);
+        $job = new SaveNewLogEvent(false, []);
+        $job->handle();
+    }
 
     /**
      * Test model interaction
