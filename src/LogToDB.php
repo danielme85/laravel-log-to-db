@@ -45,7 +45,6 @@ class LogToDB
      * LogToDB constructor.
      *
      * @param array $loggingConfig config values;.
-     * @throws DBLogException
      */
     function __construct($loggingConfig = [])
     {
@@ -71,11 +70,6 @@ class LogToDB
         if (isset($dbconfig[$this->connection])) {
             $this->database = $dbconfig[$this->connection];
         }
-
-        if (empty($this->database)) {
-            throw new DBLogException("Required configs missing: The LogToDB class needs a database correctly setup in the configs: databases.php and logtodb.php");
-        }
-
     }
 
     /**
@@ -126,7 +120,7 @@ class LogToDB
         //Use custom model
         if (!empty($this->model)) {
             return new $this->model;
-        } else if ($this->database['driver'] === 'mongodb') {
+        } else if (isset($this->database['driver']) && $this->database['driver'] === 'mongodb') {
             //MongoDB has its own Model
             $mongo = new DBLogMongoDB();
             $mongo->bind($this->connection, $this->collection);
