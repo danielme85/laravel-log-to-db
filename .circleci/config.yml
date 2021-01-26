@@ -23,19 +23,17 @@ jobs:
 
       - restore_cache:
           keys:
-            - composer-v1-{{ checksum "composer.lock" }}
+            - composer-v1-{{ checksum "composer.json" }}
       
       - run: composer install --no-interaction
       - run: composer require jenssegers/mongodb --dev
       - run: composer require pcov/clobber --dev
 
       - save_cache:
-              key: composer-v1-{{ checksum "composer.lock" }}
+              key: composer-v1-{{ checksum "composer.json" }}
               paths:
                 - vendor
       
-      - run: ./vendor/bin/pcov clobber
-
       - run:
           name: Run phpunit
           command: XDEBUG_MODE=coverage -dpcov.enabled=1 -dpcov.directory="./app" -dpcov.suffix=".php" vendor/bin/phpunit --coverage-clover=coverage.xml
