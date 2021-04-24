@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Log\Processors;
+namespace danielme85\LaravelLogToDB\Processors;
 
 use Illuminate\Support\Facades\Auth;
 use Monolog\Processor\ProcessorInterface;
