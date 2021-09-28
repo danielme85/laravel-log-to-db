@@ -1,0 +1,11 @@
+env:
+  - DB_HOST=0.0.0.0
+  - DB_PORT=3366
+  - DB_DATABASE=testing
+  - DB_USER=root
+  - DB_PASSWORD=norestforthetest
+  - MDB_DATABASE=testing
+  - MDB_PORT=27888
+
+providers:
+  - danielme85\LaravelLogToDB\ServiceProvider

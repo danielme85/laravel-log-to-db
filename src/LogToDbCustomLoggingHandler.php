@@ -3,7 +3,10 @@
 namespace danielme85\LaravelLogToDB;
 
 use danielme85\LaravelLogToDB\Models\DBLogException;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\Handler\ErrorLogHandler;
+use Monolog\Logger;
 
 /**
  * Class LogToDbHandler
@@ -54,22 +57,25 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
      */
     protected function write(array $record): void
     {
-        if (!empty($record)) {
-            if (!empty($record['context']['exception']) && is_object($record['context']['exception']) &&
-                get_class($record['context']['exception']) === DBLogException::class) {
-                //Do nothing if empty log record or an error Exception from itself.
-            } else {
-                try {
-                    $log = new LogToDB($this->config);
-                    $log->newFromMonolog($record);
-                } catch (DBLogException $e) {
-                    //do nothing if exception of self
-                } catch (\Throwable $e) {
-                    //convert any runtime Exception while logging to a special class so we can avoid our own
-                    //exceptions for 99% less infinite loops!
-                    throw new DBLogException($e->getMessage());
-                }
-            }
+        try {
+            $log = new LogToDB($this->config);
+            $log->newFromMonolog($record);
+        } catch (\Exception $e) {
+            $this->emergencyLog([
+                'message' => 'There was an error while trying to write the log to a DB, log record pushed to error_log()',
+                'level' => Logger::CRITICAL,
+                'level_name' => 'critical',
+                'context' => LogToDB::parseIfException(['exception' => $e]),
+                'extra' => []
+            ]);
+            $this->emergencyLog($record);
         }
+    }
+
+    protected function emergencyLog(array $record)
+    {
+        $errorHandler = new ErrorLogHandler();
+        $errorHandler->setFormatter(new LineFormatter('%level_name%: %message% %context%'));
+        $errorHandler->handle($record);
     }
 }

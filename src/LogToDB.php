@@ -4,7 +4,6 @@ namespace danielme85\LaravelLogToDB;
 
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\Models\DBLog;
-use danielme85\LaravelLogToDB\Models\DBLogException;
 use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
 
 /**
@@ -147,7 +146,7 @@ class LogToDB
 
         if (!empty($this->connection)) {
             if ($detailed && !empty($record['context']) && !empty($record['context']['exception'])) {
-                $record['context'] = $this->parseIfException($record['context']);
+                $record['context'] = self::parseIfException($record['context'], true);
             } else if (!$detailed) {
                 $record['context'] = null;
             }
@@ -193,10 +192,11 @@ class LogToDB
     /**
      * Parse the exception class
      *
-     * @param mixed $context
+     * @param array $context
+     * @param bool $trace
      * @return array
      */
-    private function parseIfException($context)
+    public static function parseIfException(array $context, bool $trace = false)
     {
         if (!empty($context['exception'])) {
             $exception = $context['exception'];
@@ -222,7 +222,7 @@ class LogToDB
                     if (method_exists($exception, 'getLine')) {
                         $newexception['line'] = $exception->getLine();
                     }
-                    if (method_exists($exception, 'getTrace')) {
+                    if ($trace && method_exists($exception, 'getTraceAsString')) {
                         $newexception['trace'] = $exception->getTraceAsString();
                     }
                     if (method_exists($exception, 'getSeverity')) {

@@ -2,7 +2,6 @@
 
 namespace danielme85\LaravelLogToDB\Jobs;
 
-use danielme85\LaravelLogToDB\Models\CreateLogFromRecord;
 use danielme85\LaravelLogToDB\Models\DBLogException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;

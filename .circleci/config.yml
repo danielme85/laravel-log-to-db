@@ -3,9 +3,9 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: danielme/laravel-cli:latest
+      - image: danielme/laravel-circleci-php7:latest
       - image: circleci/mongo:latest
-      - image: circleci/mysql:5.7
+      - image: circleci/mariadb:latest
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
       MYSQL_ROOT_PASSWORD: ''
