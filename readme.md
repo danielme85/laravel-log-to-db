@@ -26,7 +26,7 @@ Uses Laravel native logging functionality.
 ## Installation
 Use the composer require or add to composer.json. 
 ```
-require danielme85/laravel-log-to-db
+composer require danielme85/laravel-log-to-db
 ```
 
 If you are using SQL database server to store log events you can use the migration included. The MongoDB driver does not require the migration.
