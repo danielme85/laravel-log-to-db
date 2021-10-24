@@ -8,22 +8,16 @@ use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 
 class LogToDbTest extends Orchestra\Testbench\TestCase
 {
-    protected $migrated = false;
-
     /**
      * Setup the test environment.
      */
     protected function setUp(): void
     {
         parent::setUp();
-
-        if (!$this->migrated) {
-            $this->loadMigrationsFrom(__DIR__.'/../src/migrations');
-            if ($this->artisan('migrate', [
-                '--database' => 'mysql'])) {
-                $this->migrated = true;
-            }
-        }
+        $this->loadMigrationsFrom(__DIR__.'/../src/migrations');
+        $this->artisan('migrate', [
+            '--database' => 'mysql'
+        ]);
     }
 
     /**
@@ -462,8 +456,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     public function testCustomModel()
     {
         config()->set('logtodb.model', \danielme85\LaravelLogToDB\Tests\CustomEloquentModel::class);
-        $this->expectException(\danielme85\LaravelLogToDB\Models\DBLogException::class);
-        $this->expectExceptionMessage('This is on a custom model class');
         Log::info('This is on a custom model class');
         $this->assertStringContainsString('This is on a custom model class', LogToDB::model()->latest('id')->first()->message);
     }

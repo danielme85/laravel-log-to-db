@@ -1,0 +1,22 @@
+---
+version: "2.4"
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb_phpunit
+    network_mode: bridge
+    ports:
+      - "3366:3306"
+    environment:
+      - MYSQL_DATABASE=testing
+      - MYSQL_USER=testing
+      - MYSQL_ROOT_PASSWORD=norestforthetest
+      - MYSQL_PASSWORD=norestforthetest
+
+  mongo:
+    image: mongo
+    container_name: mongodb_phpunit
+    restart: always
+    network_mode: bridge
+    ports:
+      - "27888:27017"
