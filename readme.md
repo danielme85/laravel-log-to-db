@@ -50,19 +50,36 @@ composer require jenssegers/mongodb
 ## Configuration
 Starting with Laravel 5.6 and later, you will have a new config file: "config/logging.php". 
 You will need to add an array under 'channels' for Log-to-DB here like so:
+```php 
+'database' => [
+    'driver' => 'custom',
+    'via' => danielme85\LaravelLogToDB\LogToDbHandler::class
+    ...
+    ],
+```
+These are the minimum required logging.php config settings to get started. Please note that the array index 'database' 
+can be whatever string you like as long as it is unique to this logging config. 
+You can also give the logging channel a name that later is referenced in a column in the DB table, this way you can have multiple 
+logging-to-db channels. 
+
 ```php
 'channels' => [
     'stack' => [
         'name' => 'Log Stack',
         'driver' => 'stack',
-        'channels' => ['database', 'file'],
+        'channels' => ['database', 'other-database', 'file'],
     ],
     'database' => [
         'driver' => 'custom',
         'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+        'name' => 'Basic DB Logging'
+    ],
+    'other-database' => [
+        'driver' => 'custom',
+        'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
         //'model' => App\Model\Log::class, //Your own optional custom model
         'level' => env('APP_LOG_LEVEL', 'debug'),
-        'name' => 'My DB Log',
+        'name' => 'My DB Log with a bunch more settings',
         'connection' => 'default',
         'collection' => 'log',
         'detailed' => true,
