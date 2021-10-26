@@ -15,9 +15,20 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     {
         parent::setUp();
         $this->loadMigrationsFrom(__DIR__.'/../src/migrations');
-        $this->artisan('migrate', [
-            '--database' => 'mysql'
-        ]);
+    }
+
+    /**
+     * Define database migrations.
+     *
+     * @return void
+     */
+    protected function defineDatabaseMigrations()
+    {
+        $this->artisan('migrate', ['--database' => 'mysql'])->run();
+
+        //$this->beforeApplicationDestroyed(function () {
+        //    $this->artisan('migrate:rollback', ['--database' => 'testbench'])->run();
+        //});
     }
 
     /**
@@ -27,7 +38,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      *
      * @return void
      */
-    protected function getEnvironmentSetUp($app)
+    protected function defineEnvironment($app)
     {
         $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../', '.env.testing');
         $dotenv->load();
@@ -39,7 +50,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
                 'host' => env('DB_HOST', '127.0.0.1'),
                 'port' => env('DB_PORT', 3306),
                 'database' => env('DB_DATABASE', 'testing'),
-                'username' => env('DB_USER', 'root'),
+                'username' => env('DB_USERNAME', 'root'),
                 'password' => env('DB_PASSWORD', ''),
                 'charset' => 'utf8',
                 'collation' => 'utf8_unicode_ci',
@@ -236,7 +247,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->expectException(DBLogException::class);
         throw new DBLogException('Dont log this');
     }
-    
+
     /**
      * Test exception when expected format is wrong.
      *

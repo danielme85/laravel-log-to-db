@@ -21,4 +21,10 @@ RUN apk --no-cache add
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-ENTRYPOINT ["/entrypoint.sh"]
+WORKDIR /
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+
+ENTRYPOINT ["entrypoint.sh"]

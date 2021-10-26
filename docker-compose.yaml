@@ -1,22 +1,86 @@
 ---
 version: "2.4"
 services:
+
   mariadb:
-    image: mariadb:latest
-    container_name: mariadb_phpunit
-    network_mode: bridge
+    image: mariadb:10.5
+    container_name: laravel-log-to-db-mariadb
+    networks:
+      - laravel-log-to-db-testbench
     ports:
       - "3366:3306"
     environment:
-      - MYSQL_DATABASE=testing
-      - MYSQL_USER=testing
-      - MYSQL_ROOT_PASSWORD=norestforthetest
-      - MYSQL_PASSWORD=norestforthetest
+      MYSQL_DATABASE: 'logtodb'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
   mongo:
-    image: mongo
-    container_name: mongodb_phpunit
-    restart: always
-    network_mode: bridge
+    image: mongo:latest
+    container_name: laravel-log-to-db-mongodb
+    networks:
+      - laravel-log-to-db-testbench
     ports:
       - "27888:27017"
+
+  php7:
+    image: danielme/laravel-circleci-php7:latest
+    container_name: laravel-log-to-db-php7_testbench
+    depends_on:
+      - "mariadb"
+      - "mongo"
+    networks:
+      - laravel-log-to-db-testbench
+    volumes:
+      - .:/var/testing
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=logtodb
+      - DB_USERNAME=root
+      - MDB_DATABASE=logtodb
+      - MDB_HOST=mongo
+      - MDB_PORT=27017
+
+    #entrypoint: "tail -f /dev/null"
+
+    entrypoint: bash -c "
+      cd /var/testing &&
+      composer install --no-interaction &&
+      composer require jenssegers/mongodb --dev &&
+      dockerize -wait tcp://mariadb:3306 -timeout 1m &&
+      ./vendor/bin/testbench package:test
+      "
+
+  php8:
+    image: danielme/laravel-circleci-php8:latest
+    container_name: laravel-log-to-db-php8_testbench
+    depends_on:
+      - "mariadb"
+      - "mongo"
+    networks:
+      - laravel-log-to-db-testbench
+    volumes:
+      - .:/var/testing
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=logtodb
+      - DB_USERNAME=root
+      - MDB_DATABASE=logtodb
+      - MDB_HOST=mongo
+      - MDB_PORT=27017
+
+    #entrypoint: "tail -f /dev/null"
+
+    entrypoint: bash -c "
+      cd /var/testing &&
+      composer install --no-interaction &&
+      composer require jenssegers/mongodb --dev &&
+      dockerize -wait tcp://mariadb:3306 -timeout 1m &&
+      ./vendor/bin/testbench package:test
+      "
+
+networks:
+  laravel-log-to-db-testbench:
+    driver: bridge
