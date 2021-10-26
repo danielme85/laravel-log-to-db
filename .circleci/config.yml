@@ -9,6 +9,7 @@ jobs:
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
       DB_HOST: 127.0.0.1
+      MDB_HOST: 127.0.0.1
 
     working_directory: ~/app
     steps:
@@ -36,6 +37,7 @@ jobs:
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
       DB_HOST: 127.0.0.1
+      MDB_HOST: 127.0.0.1
 
     working_directory: ~/app
     steps:
