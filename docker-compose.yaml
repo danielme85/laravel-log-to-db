@@ -46,7 +46,6 @@ services:
     entrypoint: bash -c "
       cd /var/testing &&
       composer install --no-interaction &&
-      composer require jenssegers/mongodb --dev &&
       dockerize -wait tcp://mariadb:3306 -timeout 1m &&
       ./vendor/bin/testbench package:test
       "
@@ -76,7 +75,6 @@ services:
     entrypoint: bash -c "
       cd /var/testing &&
       composer install --no-interaction &&
-      composer require jenssegers/mongodb --dev &&
       dockerize -wait tcp://mariadb:3306 -timeout 1m &&
       ./vendor/bin/testbench package:test
       "

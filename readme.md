@@ -18,6 +18,7 @@ Uses Laravel native logging functionality.
 * [Log Cleanup](#log-cleanup)
 * [Processors](#processors)
 * [Lumen Installation](#lumen-installation)
+* [Local Testing With Docker](#local-testing-with-docker)
 
 
 > :warning: This project should be backwards compatible down to and including Laravel 5.6 and PHP 7.1.
@@ -500,7 +501,19 @@ QUEUE_CONNECTION=redis
 CACHE_DRIVER=redis
 ```  
 
+## Local Testing With Docker
+There is a helper bash script called 'runLocalTestInDocker.sh', that runs the following docker commands:
+```
+docker-compose up -d mariadb mongo &&
+docker-compose up php7 &&
+docker-compose up php8 &&
+docker-compose down
+```
+To run Docker is required, give execute rights to the script and run:
+```
+chmod +x runLocalTestInDocker.sh && 
+./runLocalTestInDocker.sh
+```
 
-Development supported by:
-<br>
+### Development supported by:
 ![](https://media.giphy.com/media/3knKct3fGqxhK/giphy.gif)
