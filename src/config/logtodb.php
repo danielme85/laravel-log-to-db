@@ -5,7 +5,7 @@
     |--------------------------------------------------------------------------
     |
     |   These settings are ONLY USED if they are not specified per channel
-    |   in the config/logging.php file.
+    |   in the config/logging.php8 file.
     |
     */
 return [
@@ -15,11 +15,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | Set the default database connection to use. This is only used if no connection
-    | is specified in config/logging.php. Matches connections in the config/database.php.
+    | is specified in config/logging.php8. Matches connections in the config/database.php8.
     | The default is: 'default', this will use whatever is default in the Laravel DB
     | config file. To use a different or separate connection set the connection name here.
-    | Ex: 'connection' => 'mysql' wil use the connection 'mysql' in database.php.
-    | Ex: 'connection' => 'mongodb' wil use the connection 'mongodb' in database.php*
+    | Ex: 'connection' => 'mysql' wil use the connection 'mysql' in database.php8.
+    | Ex: 'connection' => 'mongodb' wil use the connection 'mongodb' in database.php8*
     |
     | Supported connections should be same as Laravel since the Laravel DB/Eloquent
     | Supported DB engines as of this writing: [MySQL] [PostgreSQL] [SQLite] [SQL Server]
@@ -89,7 +89,7 @@ return [
     |
     | If you are working with multiple queue connections, you may specify which
     | connection to push a job to.
-    | This relates yto your queue settings in the config/queue.php file.
+    | This relates yto your queue settings in the config/queue.php8 file.
     | Leave blank to use the default connection.
     |
     */

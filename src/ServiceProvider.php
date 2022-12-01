@@ -37,7 +37,7 @@ class ServiceProvider extends Provider {
         //Merge config first, then keep a publish option
         $this->mergeConfigFrom(__DIR__.'/config/logtodb.php', 'logtodb');
         $this->publishes([
-            __DIR__.'/config/logtodb.php' => config_path('logtodb.php'),
+            __DIR__.'/config/logtodb.php' => config_path('logtodb.php8'),
         ], 'config');
 
         //Publish the migration

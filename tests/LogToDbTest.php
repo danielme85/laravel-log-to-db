@@ -118,7 +118,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      * Get package providers.  At a minimum this is the package being tested, but also
      * would include packages upon which our package depends, e.g. Cartalyst/Sentry
      * In a normal app environment these would be added to the 'providers' array in
-     * the config/app.php file.
+     * the config/app.php8 file.
      *
      * @param \Illuminate\Foundation\Application $app
      *
@@ -170,17 +170,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertCount(8, $logReader);
         $this->assertCount(8, $logReaderMongoDB);
         $this->assertCount(8, $logReaderSpecific);
-    }
-
-    /**
-     *
-     * @group events
-     * @throws Exception
-     */
-    public function testMessageLoggedEvent()
-    {
-        $this->expectsEvents([\Illuminate\Log\Events\MessageLogged::class]);
-        Log::debug("This is to trigger a log event.");
     }
 
     /**

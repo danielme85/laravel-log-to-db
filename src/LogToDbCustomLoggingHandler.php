@@ -25,7 +25,7 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
     /**
      * LogToDbHandler constructor.
      *
-     * @param array $config Logging configuration from logging.php
+     * @param array $config Logging configuration from logging.php8
      * @param array $processors collection of log processors
      * @param bool $bubble Whether the messages that are handled can bubble up the stack or not
      */
