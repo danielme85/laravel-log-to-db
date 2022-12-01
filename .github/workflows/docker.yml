@@ -19,7 +19,3 @@ jobs:
 
       - name: Start containers and Run tests
         run: docker-compose up -d --build
-
-      - name: Stop containers
-        if: always()
-        run: docker-compose down
