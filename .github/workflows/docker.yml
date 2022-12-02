@@ -17,5 +17,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Start containers and Run tests
-        run: docker-compose up -d --build
+      - name: Start containers
+        run: docker-compose up -d mariadb mongo
+
+      - name: Start test container
+        run: docker-compose up php8
+
+      - name: Cleanup containers
+        run: docker-compose down
+
