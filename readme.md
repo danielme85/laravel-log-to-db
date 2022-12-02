@@ -3,7 +3,7 @@
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/danielme85/laravel-log-to-db.svg?style=flat-square)](https://packagist.org/packages/danielme85/laravel-log-to-db)
 [![GitHub release](https://img.shields.io/github/release/danielme85/laravel-log-to-db.svg?style=flat-square)](https://packagist.org/packages/danielme85/laravel-log-to-db)
 [![GitHub tag](https://img.shields.io/github/tag/danielme85/laravel-log-to-db.svg?style=flat-square)](https://github.com/danielme85/laravel-log-to-db)
-[![CircleCi](https://img.shields.io/circleci/build/github/danielme85/laravel-log-to-db?style=flat-square)](https://app.circleci.com/pipelines/github/danielme85/laravel-log-to-db)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/danielme85/laravel-log-to-db/TestInDocker?style=flat-square)
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/danielme85/laravel-log-to-db?style=flat-square)](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db)
 

@@ -12,6 +12,7 @@ jobs:
   docker:
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    container: ghcr.io/danielme85/lltdb-testbench:latest
 
     steps:
       - name: Checkout
@@ -20,8 +21,11 @@ jobs:
       - name: Start containers
         run: docker-compose up -d mariadb mongo
 
-      - name: Start test container
-        run: docker-compose up php8
+      - name: Install composer packages
+        run:  cd /var/testing && composer install --no-interaction
+
+      - name: Run tests
+        run: cd /var/testing && dockerize -wait tcp://mariadb:3306 -timeout 1m && ./vendor/bin/testbench package:test
 
       - name: Cleanup containers
         run: docker-compose down
