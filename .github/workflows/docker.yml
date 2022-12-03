@@ -44,6 +44,7 @@ jobs:
   run-test-image:
     needs: build-test-image
     timeout-minutes: 5
+    runs-on: ubuntu-latest
     container: ghcr.io/danielme85/lltdb-testbench:latest
     credentials:
       username: ${{ github.actor }}
