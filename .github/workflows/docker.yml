@@ -10,7 +10,7 @@ on:
 
 jobs:
   run-test-image:
-    needs: build-test-image
+    runs-on: ubuntu:latest
     timeout-minutes: 5
     container: ghcr.io/danielme85/lltdb-testbench:latest
     credentials:
