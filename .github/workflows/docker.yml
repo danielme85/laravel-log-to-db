@@ -46,9 +46,6 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     container: ghcr.io/danielme85/lltdb-testbench:latest
-    credentials:
-      username: ${{ github.actor }}
-      password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Start containers
