@@ -33,7 +33,7 @@ services:
     networks:
       - laravel-log-to-db-testing
     volumes:
-      - .:/var/testing
+      - .:/var/testing:cached
     environment:
       - DB_CONNECTION=mysql
       - DB_HOST=mariadb

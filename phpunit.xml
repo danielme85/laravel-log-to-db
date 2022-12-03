@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" backupStaticAttributes="false" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" processIsolation="false" stopOnFailure="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage processUncoveredFiles="true">
-    <include>
-      <directory suffix=".php">./src</directory>
-    </include>
-    <exclude>
-      <directory>./vendor</directory>
-    </exclude>
-  </coverage>
-  <testsuites>
-    <testsuite name="Test Suite danielme85/laravel-log-to-db">
-      <directory suffix=".php">./tests/</directory>
-    </testsuite>
-  </testsuites>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" backupStaticAttributes="false"
+         colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true" processIsolation="false" stopOnFailure="false"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+    <coverage>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory>./vendor</directory>
+        </exclude>
+        <report>
+            <clover outputFile="./clover.xml"/>
+        </report>
+    </coverage>
+    <testsuites>
+        <testsuite name="Test Suite danielme85/laravel-log-to-db">
+            <directory suffix=".php">./tests/</directory>
+        </testsuite>
+        <logging>
+            <log type="testdox-text" target="php://stdout"/>
+        </logging>
+    </testsuites>
 </phpunit>
