@@ -13,10 +13,11 @@ jobs:
   run-test-image:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    container: ghcr.io/danielme85/lltdb-testbench:latest
-    credentials:
-      username: ${{ github.actor }}
-      password: ${{ secrets.GITHUB_TOKEN }}
+    container:
+      image: ghcr.io/danielme85/lltdb-testbench:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout
