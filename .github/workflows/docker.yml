@@ -11,7 +11,7 @@ on:
 
 jobs:
   run-test-image:
-    runs-on: ubuntu:latest
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     container: ghcr.io/danielme85/lltdb-testbench:latest
 
