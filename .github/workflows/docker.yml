@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
@@ -22,12 +23,15 @@ jobs:
         run: cd /var/testing && composer install --no-interaction
 
       - name: Run tests
-        run: cd /var/testing && dockerize -wait tcp://mariadb:3306 -timeout 1m && ./vendor/bin/testbench package:test
+        run: ">
+        cd /var/testing && dockerize -wait tcp://mariadb:3306 -timeout 1m 
+        && ./vendor/bin/phpunit --coverage-clover ./coverage.xml
+        "
 
       - name: Upload test coverage
         uses: codecov/codecov-action@v3
         with:
-          files: ./clover.xml
+          files: ./coverage.xml
 
       - name: Cleanup containers
         run: docker-compose down

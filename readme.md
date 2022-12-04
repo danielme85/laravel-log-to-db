@@ -415,6 +415,8 @@ You also need to make sure that all the needed basic config values for logtodb i
 * or just add all your log-to-db options in your applications config/logging.php file (probably easiest). Just follow the 
 configuration example above under the [configuration](#configuration) section.
   
+Since we are using Lumen we need to specify the config and service providers in the "bootstrap/app.php" file.
+
 ```
 /*
 |--------------------------------------------------------------------------
@@ -452,9 +454,9 @@ Next step is to register the service provider, either in bootstrap/app.php or in
 $app->register(\danielme85\LaravelLogToDB\ServiceProvider::class);
 ```
 
-After adding the service provider you should be able to run the database migration with:
+After adding the service provider you should be able to run the database migration in Lumen with:
 ```
-php artisan migrate
+php artisan migrate --path=vendor/danielme85/laravel-log-to-db/src/migrations/2018_08_11_003343_create_log_table.php
 ```
 Please note that you need a working db connection in Lumen at this point.
 
