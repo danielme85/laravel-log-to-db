@@ -15,9 +15,6 @@ jobs:
     timeout-minutes: 5
     container:
       image: ghcr.io/danielme85/lltdb-testbench:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.ACTION_TOKEN }}
 
     steps:
       - name: Checkout
