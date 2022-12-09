@@ -1,4 +1,4 @@
-name: TestInDocker
+name: RunPhpUnitInDocker
 
 on:
   push:
@@ -10,11 +10,9 @@ on:
       - main
 
 jobs:
-  run-test-image:
+  docker:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    container:
-      image: ghcr.io/danielme85/lltdb-testbench:latest
 
     steps:
       - name: Checkout
@@ -23,20 +21,8 @@ jobs:
       - name: Start containers
         run: docker-compose up -d mariadb mongo
 
-      - name: Install composer packages
-        run: cd /var/testing && composer install --no-interaction
-
-      - name: Run tests
-        run: ">
-        cd /var/testing && dockerize -wait tcp://mariadb:3306 -timeout 1m 
-        && ./vendor/bin/phpunit --coverage-clover ./coverage.xml
-        "
-
-      - name: Upload test coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./coverage.xml
+      - name: Start test container
+        run: docker-compose up php8
 
       - name: Cleanup containers
         run: docker-compose down
-
