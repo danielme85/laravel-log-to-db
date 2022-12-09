@@ -324,6 +324,19 @@ LogToDB::model()->removeOlderThan('2019-01-01 23:00:00');
 
 ## Processors
 Monolog ships with a set of [processors](https://github.com/Seldaek/monolog/tree/master/src/Monolog/Processor), these will generate additional data and populate the 'extra' field.
+I've also added a couple of example processors in this pacage under src/Processors.
+To enable processors you can add them to the log config array:
+```php
+'database' => [
+    'driver' => 'custom',
+    'via' => danielme85\LaravelLogToDB\LogToDbHandler::class
+    ...
+    'processors' => [
+        \danielme85\LaravelLogToDB\Processors\PhpVersionProcessor::class,
+        Monolog\Processor\HostnameProcessor::class,
+    ]
+
+```
 
 You could also create your own custom processor, make sure they implement [Monolog\Processor\ProcessorInterface](https://github.com/Seldaek/monolog/blob/master/src/Monolog/Processor/ProcessorInterface.php).
 
