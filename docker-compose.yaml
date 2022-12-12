@@ -3,7 +3,7 @@ version: "2.4"
 services:
 
   mariadb:
-    image: mariadb:10.5
+    image: mariadb:latest
     container_name: laravel-log-to-db-mariadb
     networks:
       - laravel-log-to-db-testing
@@ -24,6 +24,7 @@ services:
   php8:
     image: ghcr.io/danielme85/lltdb-testbench
     container_name: laravel-log-to-db-php8
+    tty: true
     build:
       context: ./docker/php8/
       dockerfile: Dockerfile
