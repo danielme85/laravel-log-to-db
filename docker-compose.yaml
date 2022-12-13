@@ -25,9 +25,6 @@ services:
     image: ghcr.io/danielme85/lltdb-testbench
     container_name: laravel-log-to-db-php8
     tty: true
-    build:
-      context: ./docker/php8/
-      dockerfile: Dockerfile
     depends_on:
       - "mariadb"
       - "mongo"
@@ -49,10 +46,10 @@ services:
       cd /var/testing &&
       composer install --no-interaction &&
       dockerize -wait tcp://mariadb:3306 -timeout 1m &&
-      ./vendor/bin/phpunit --coverage-text --coverage-xml=coverage.xml &&
+      ./vendor/bin/phpunit --coverage-clover coverage.xml &&
       curl -Os https://uploader.codecov.io/latest/linux/codecov &&
-      chmod +x codecov
-      ./codecov -f ./coverage.xml
+      chmod +x codecov &&
+      ./codecov
       "
 
 networks:
