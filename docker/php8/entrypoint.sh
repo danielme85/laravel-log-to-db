@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 export DEBIAN_FRONTEND=noninteractive
 bash <(cat /etc/os-release; echo 'echo ${VERSION/*, /}')
 php -v

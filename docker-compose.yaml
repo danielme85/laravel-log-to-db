@@ -42,8 +42,11 @@ services:
       - MDB_HOST=mongo
       - MDB_PORT=27017
 
+    command: "cp /var/testing/docker/entrypoint.sh /entrypoint.sh && chmod +x /entrypoint.sh"
+
     entrypoint:
       - ./entrypoint.sh
+
 
 networks:
   laravel-log-to-db-testing:
