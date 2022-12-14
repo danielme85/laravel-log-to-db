@@ -42,7 +42,7 @@ services:
       - MDB_HOST=mongo
       - MDB_PORT=27017
 
-    entrypoint: "./docker/phpunit.sh"
+    entrypoint: "./entrypoint.sh"
 
 networks:
   laravel-log-to-db-testing:
