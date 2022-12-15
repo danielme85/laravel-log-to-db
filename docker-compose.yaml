@@ -43,7 +43,7 @@ services:
       - MDB_PORT=27017
 
     entrypoint:
-      - ./entrypoint.shs
+      - ./entrypoint.sh
 
 networks:
   laravel-log-to-db-testing:
