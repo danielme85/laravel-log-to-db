@@ -42,9 +42,6 @@ services:
       - MDB_HOST=mongo
       - MDB_PORT=27017
 
-    entrypoint:
-      - ./entrypoint.sh
-
 networks:
   laravel-log-to-db-testing:
     driver: bridge
