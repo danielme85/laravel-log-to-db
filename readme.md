@@ -3,12 +3,12 @@
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/danielme85/laravel-log-to-db.svg?style=flat-square)](https://packagist.org/packages/danielme85/laravel-log-to-db)
 [![GitHub release](https://img.shields.io/github/release/danielme85/laravel-log-to-db.svg?style=flat-square)](https://packagist.org/packages/danielme85/laravel-log-to-db)
 [![GitHub tag](https://img.shields.io/github/tag/danielme85/laravel-log-to-db.svg?style=flat-square)](https://github.com/danielme85/laravel-log-to-db)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/danielme85/laravel-log-to-db/TestInDocker?style=flat-square)
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/danielme85/laravel-log-to-db?style=flat-square)](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db)
+[![buddy pipeline](https://app.buddy.works/mellum/laravel-log-to-db/pipelines/pipeline/428957/badge.svg?token=4dc1f653bedb370e80876dcda7d7c623a8cb67e2270e6255d9ceedba498cd884 "buddy pipeline")](https://app.buddy.works/mellum/laravel-log-to-db/pipelines/pipeline/428957)
 
-Custom Laravel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
-Uses Laravel native logging functionality.
+Hi, this is a custom Laravel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
+Uses Laravel native logging functionality trough [Monolog](https://github.com/Seldaek/monolog).
 
 * [Installation](#installation)
 * [Configuration](#configuration)
@@ -21,8 +21,8 @@ Uses Laravel native logging functionality.
 * [Local Testing With Docker](#local-testing-with-docker)
 
 
-> :warning: This project should be backwards compatible down to and including Laravel 5.6 and PHP 7.1.
-> <br>However testing of current version and master branch is only with PHP 7.3/7.4 and Laravel 8.
+> :warning: This project should be backwards compatible down to and including Laravel 5.6 and php 7.1.
+> <br>However testing of current version and main branch is currently only with php 8.1 and Laravel 9.
 
 ## Installation
 Use the composer require or add to composer.json. 
@@ -107,7 +107,7 @@ logging-to-db channels.
  * processors = Array of additional processors. These will add additional info into the 'extra' field in the logged data.
 [More information about processors](#processors)
  
-More info about some of these options: https://laravel.com/docs/6.x/logging#customizing-monolog-for-channels
+More info about some of these options: https://laravel.com/docs/9.x/logging#customizing-monolog-for-channels
 
 There are some default settings and more information about configuring the logger in the 'logtodb.php' config file.
 This could be copied to your project if you would like edit it with the vendor publish command.
