@@ -11,6 +11,7 @@ services:
       - "3366:3306"
     environment:
       MYSQL_DATABASE: 'logtodb'
+      MYSQL_ROOT_PASSWORD: 'root'
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
   mongo:
@@ -38,6 +39,7 @@ services:
       - DB_PORT=3306
       - DB_DATABASE=logtodb
       - DB_USERNAME=root
+      - DB_PASSWORD=root
       - MDB_DATABASE=logtodb
       - MDB_HOST=mongo
       - MDB_PORT=27017
