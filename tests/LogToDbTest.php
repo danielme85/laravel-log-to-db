@@ -25,10 +25,6 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     protected function defineDatabaseMigrations()
     {
         $this->artisan('migrate', ['--database' => 'mysql'])->run();
-
-        //$this->beforeApplicationDestroyed(function () {
-        //    $this->artisan('migrate:rollback', ['--database' => 'testbench'])->run();
-        //});
     }
 
     /**

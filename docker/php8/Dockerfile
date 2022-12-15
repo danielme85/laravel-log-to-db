@@ -11,7 +11,7 @@ WORKDIR /
 
 RUN apt update && apt upgrade -y
 RUN apt install -y curl git openssl openssh-client mysql-client bash libzip-dev zip wget \
-    php8.1 php8.1-dev php8.1-mysql php8.1-mongodb php8.1-curl php8.1-mbstring php8.1-pcov
+    php8.1 php8.1-dev php8.1-mysql php8.1-mongodb php8.1-curl php8.1-mbstring php8.1-pcov php8.1-cli
 
 RUN pecl install pcov
 RUN pecl install mongodb
@@ -29,4 +29,4 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

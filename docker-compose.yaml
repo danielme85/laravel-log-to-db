@@ -11,6 +11,7 @@ services:
       - "3366:3306"
     environment:
       MYSQL_DATABASE: 'logtodb'
+      MYSQL_ROOT_PASSWORD: 'root'
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
   mongo:
@@ -25,26 +26,23 @@ services:
     image: ghcr.io/danielme85/lltdb-testbench
     container_name: laravel-log-to-db-php8
     tty: true
-    build:
-      context: ./docker/php8/
-      dockerfile: Dockerfile
     depends_on:
       - "mariadb"
       - "mongo"
     networks:
       - laravel-log-to-db-testing
     volumes:
-      - .:/var/testing:cached
+      - .:/var/testing
     environment:
       - DB_CONNECTION=mysql
       - DB_HOST=mariadb
       - DB_PORT=3306
       - DB_DATABASE=logtodb
       - DB_USERNAME=root
+      - DB_PASSWORD=root
       - MDB_DATABASE=logtodb
       - MDB_HOST=mongo
       - MDB_PORT=27017
-
     entrypoint: bash -c "
       cd /var/testing &&
       composer install --no-interaction &&

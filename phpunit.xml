@@ -15,8 +15,5 @@
         <testsuite name="Test Suite danielme85/laravel-log-to-db">
             <directory suffix=".php">./tests/</directory>
         </testsuite>
-        <logging>
-            <log type="testdox-text" target="php://stdout"/>
-        </logging>
     </testsuites>
 </phpunit>
