@@ -1,4 +1,5 @@
 #!/bin/bash
 export DEBIAN_FRONTEND=noninteractive
+bash <(cat /etc/os-release; echo 'echo ${VERSION/*, /}')
 php -v
-cd /var/testing && chmod +x ./runTests.sh && ./runTests.sh
+echo "Entrypoint/Boot actions completed..."
