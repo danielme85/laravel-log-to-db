@@ -17,12 +17,8 @@ jobs:
       - image: mongo:latest
     steps:
       - checkout
-
-
       - setup_remote_docker:
           docker_layer_caching: true
-
-
       - run:
           name: Run tests
           command: |
@@ -30,7 +26,7 @@ jobs:
             composer install --no-interaction
             composer dump-autoload
             dockerize -wait tcp://localhost:3306 -timeout 1m &&
-            php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
+            php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --coverage-clover coverage.xml
             curl -Os https://uploader.codecov.io/latest/linux/codecov
             chmod +x codecov
             ./codecov -t $CODECOV_TOKEN
