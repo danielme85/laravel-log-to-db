@@ -56,8 +56,7 @@ jobs:
                   - /caches/app.tar
       - run:
           name: Start docker-compose
-          command: |
-            docker-compose up -d mariadb mongo
+          command: docker-compose up -d mariadb mongo
 
       # Download and cache dependencies
       - restore_cache:
@@ -74,14 +73,14 @@ jobs:
           paths:
             - ./vendor
       - run:
-        name: Run phpunit
-        command: |
-          cp .env.testing .env
-          dockerize -wait tcp://mariadb:3306 -timeout 1m &&
-          php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          ./codecov -t $CODECOV_TOKEN
+          name: Run phpunit
+          command: |
+            cp .env.testing .env
+            dockerize -wait tcp://mariadb:3306 -timeout 1m &&
+            php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov -t $CODECOV_TOKEN
 
 
 
