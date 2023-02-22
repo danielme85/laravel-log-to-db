@@ -8,18 +8,52 @@ jobs:
   build:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    machine:
-      image: ubuntu-2004:202101-01
-    resource_class: arm.medium
-    docker:
-      # Specify the version you desire here
-      - image: ghcr.io/danielme85/lltdb-testbench:latest
-
 
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
+
+      - run:
+          name: Install Docker Compose
+          environment:
+            COMPOSE_VERSION: '1.29.2'
+          command: |
+            curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose
+            chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+
+      - run:
+          name: Build docker image
+          command: cd  ./docker/php8 && docker build .
+
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/app.tar
+            - run:
+                name: Load Docker image layer cache
+                command: |
+                  set +o pipefail
+                  docker load -i /caches/app.tar | true
+            - run:
+                name: Build application Docker image
+                command: |
+                  docker build --cache-from=app -t app .
+            - run:
+                name: Save Docker image layer cache
+                command: |
+                  mkdir -p /caches
+                  docker save -o /caches/app.tar app
+            - save_cache:
+                key: v1-{{ .Branch }}-{{ epoch }}
+                paths:
+                  - /caches/app.tar
+      - run:
+          name: Start docker-compose
+          command: |
+            docker-compose up -d mariadb mongo
 
       # Download and cache dependencies
       - restore_cache:
@@ -35,11 +69,15 @@ jobs:
           key: v1-dependencies-{{ checksum "composer.json" }}
           paths:
             - ./vendor
-      - run: cp .env.testing .env
-      - run: php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
-      - run: curl -Os https://uploader.codecov.io/latest/linux/codecov
-      - run: chmod +x codecov
-      - run: ./codecov -t $CODECOV_TOKEN
+      - run:
+        name: Run phpunit
+        command: | 
+          cp .env.testing .env
+          dockerize -wait tcp://mariadb:3306 -timeout 1m &&
+          php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t $CODECOV_TOKEN
 
 workflows:
   run_test:
