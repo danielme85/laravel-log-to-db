@@ -50,38 +50,6 @@ services:
       ./vendor/bin/testbench package:test
       "
 
-  php8-circleci:
-    image: ghcr.io/danielme85/lltdb-testbench
-    container_name: laravel-log-to-db-php8
-    tty: true
-    depends_on:
-      - "mariadb"
-      - "mongo"
-    networks:
-      - laravel-log-to-db-testing
-    volumes:
-      - .:/var/testing
-    environment:
-      - DB_CONNECTION=mysql
-      - DB_HOST=mariadb
-      - DB_PORT=3306
-      - DB_DATABASE=logtodb
-      - DB_USERNAME=root
-      - DB_PASSWORD=root
-      - MDB_DATABASE=logtodb
-      - MDB_HOST=mongo
-      - MDB_PORT=27017
-    entrypoint: bash -c "
-      cp .env.testing .env
-      composer install --no-interaction
-      composer dump-autoload
-      dockerize -wait tcp://mariadb:3306 -timeout 1m &&
-      php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
-      curl -Os https://uploader.codecov.io/latest/linux/codecov
-      chmod +x codecov
-      ./codecov -t $CODECOV_TOKEN
-      "
-
 networks:
   laravel-log-to-db-testing:
     driver: bridge

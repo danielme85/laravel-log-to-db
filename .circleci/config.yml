@@ -6,9 +6,12 @@ version: 2
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   build:
+    machine:
+      image: ubuntu-2004:202101-01
+      resource_class: arm.medium
     working_directory: /app
     docker:
-      - image: circleci/cci-demo-docker-primary:0.0.2
+      - image: ghcr.io/danielme85/lltdb-testbench
     steps:
       - checkout
       - run:
@@ -22,5 +25,15 @@ jobs:
           name: Start docker containers
           command: |
             docker-compose up -d mariadb mongo
-            docker-compose up php8-circleci
-            docker-compose down
+
+      - run:
+          name: Run tests
+          command: |
+            cp .env.testing .env
+            composer install --no-interaction
+            composer dump-autoload
+            dockerize -wait tcp://mariadb:3306 -timeout 1m &&
+            php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov -t $CODECOV_TOKEN
