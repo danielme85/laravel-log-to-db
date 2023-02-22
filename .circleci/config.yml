@@ -6,11 +6,7 @@ version: 2
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   build:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    working_directory: /app
     steps:
       - checkout
 
@@ -79,9 +75,5 @@ jobs:
           chmod +x codecov
           ./codecov -t $CODECOV_TOKEN
 
-workflows:
-  run_test:
-    jobs:
-      - build
 
 
