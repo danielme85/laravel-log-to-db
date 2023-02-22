@@ -9,24 +9,19 @@ jobs:
     working_directory: /app
     docker:
       - image: ghcr.io/danielme85/lltdb-testbench
+      - image: mariadb:latest
+        environment:
+          MYSQL_DATABASE: 'logtodb'
+          MYSQL_ROOT_PASSWORD: 'root'
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      - image: mongo:latest
     steps:
       - checkout
 
-      - run:
-          name: Install Docker Compose
-          command: |
-            set -x
-            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose
 
       - setup_remote_docker:
           docker_layer_caching: true
 
-      - run:
-          name: Start docker containers
-          command: |
-            export COMPOSE_TLS_VERSION=TLSv1_2
-            docker-compose up -d mariadb mongo
 
       - run:
           name: Run tests
@@ -34,7 +29,7 @@ jobs:
             cp .env.testing .env
             composer install --no-interaction
             composer dump-autoload
-            dockerize -wait tcp://mariadb:3306 -timeout 1m &&
+            dockerize -wait tcp://localhost:3306 -timeout 1m &&
             php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
             curl -Os https://uploader.codecov.io/latest/linux/codecov
             chmod +x codecov
