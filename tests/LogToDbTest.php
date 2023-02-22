@@ -1,13 +1,20 @@
 <?php
 
 use danielme85\LaravelLogToDB\LogToDB;
+use danielme85\LaravelLogToDB\LogToDbHandler;
 use danielme85\LaravelLogToDB\Models\DBLogException;
+use danielme85\LaravelLogToDB\Processors\PhpVersionProcessor;
+use Dotenv\Dotenv;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use Monolog\LogRecord;
+use Monolog\Processor\HostnameProcessor;
+use Monolog\Processor\MemoryUsageProcessor;
+use Orchestra\Testbench\TestCase;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class LogToDbTest extends Orchestra\Testbench\TestCase
+class LogToDbTest extends TestCase
 {
     /**
      * Setup the test environment.
@@ -37,7 +44,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     protected function defineEnvironment($app)
     {
-        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../', '.env.testing');
+        $dotenv = Dotenv::createImmutable(__DIR__.'/../', '.env.testing');
         $dotenv->load();
 
         $app['config']->set('database.default', 'mysql');
@@ -73,33 +80,33 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
             ],
             'database' => [
                 'driver' => 'custom',
-                'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+                'via' => LogToDbHandler::class,
                 'level' => 'debug',
                 'connection' => 'default',
                 'collection' => 'log',
                 'max_records' => 10,
                 'max_hours' => 1,
                 'processors' => [
-                    Monolog\Processor\HostnameProcessor::class,
-                    Monolog\Processor\MemoryUsageProcessor::class,
-                    danielme85\LaravelLogToDB\Processors\PhpVersionProcessor::class
+                    HostnameProcessor::class,
+                    MemoryUsageProcessor::class,
+                    PhpVersionProcessor::class
                 ]
             ],
             'mongodb' => [
                 'driver' => 'custom',
-                'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+                'via' => LogToDbHandler::class,
                 'level' => 'debug',
                 'connection' => 'mongodb',
                 'collection' => 'log',
                 'max_records' => 10,
                 'max_hours' => 1,
                 'processors' => [
-                    Monolog\Processor\HostnameProcessor::class
+                    HostnameProcessor::class
                 ]
             ],
             'limited' => [
                 'driver' => 'custom',
-                'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+                'via' => LogToDbHandler::class,
                 'level' => 'warning',
                 'detailed' => false,
                 'max_records' => false,
@@ -139,7 +146,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $this->assertInstanceOf(LogToDB::class, app('laravel-log-to-db'));
         $this->assertInstanceOf(LogToDB::class, new LogToDB());
 
-        //Class works, now let's cleanup possible failed test
+        //Class works, now lets cleanup possible failed test
         LogToDB::model()->truncate();
         LogToDB::model('mongodb')->truncate();
     }
@@ -220,7 +227,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testException()
     {
-        $e = new Symfony\Component\HttpKernel\Exception\BadRequestHttpException("This is a fake 500 error", null, 500, ['fake-header' => 'value']);
+        $e = new BadRequestHttpException("This is a fake 500 error", null, 500, ['fake-header' => 'value']);
         Log::warning("Error", ['exception' => $e, 'more' => 'infohere']);
         $log = LogToDB::model()->where('message', 'Error')->first();
         $this->assertNotEmpty($log->context);
@@ -314,12 +321,12 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
         $logToDb = new LogToDB();
         $record = new LogRecord(
             datetime: new \Monolog\DateTimeImmutable(true),
+            channel: 'local',
+            level: \Monolog\Level::Info,
             message: 'job-test',
             context: [],
-            level: \Monolog\Level::Info,
-            channel: 'local',
             extra: [],
-            formatted: "[2019-10-04T17:26:38.446827+00:00] local.INFO: test [] []\n"
+            formatted: "[2019-10-04T17:26:38.446827+00:00] local.INFO: test [] []\n",
         );
 
         $job = new SaveNewLogEvent($logToDb, $record);
@@ -451,7 +458,7 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
      */
     public function testCustomModel()
     {
-        config()->set('logtodb.model', \danielme85\LaravelLogToDB\Tests\CustomEloquentModel::class);
+        config()->set('logtodb.model', CustomEloquentModel::class);
         Log::info('This is on a custom model class');
         $this->assertStringContainsString('This is on a custom model class', LogToDB::model()->latest('id')->first()->message);
     }

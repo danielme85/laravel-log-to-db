@@ -1,7 +1,5 @@
 <?php
 
-namespace danielme85\LaravelLogToDB\Tests;
-
 use danielme85\LaravelLogToDB\Models\LogToDbCreateObject;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,12 +15,4 @@ class CustomEloquentModel extends Model
     protected $connection = 'mysql';
     protected $table = 'log';
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::created(function ($log) {
-             throw new \ErrorException($log->message);
-        });
-    }
 }
