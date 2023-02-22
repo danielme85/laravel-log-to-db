@@ -2,6 +2,7 @@
 
 namespace danielme85\LaravelLogToDB\Processors;
 
+use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
 
 /**
@@ -11,9 +12,9 @@ use Monolog\Processor\ProcessorInterface;
 class PhpVersionProcessor implements ProcessorInterface
 {
     /**
-     * @return array The processed record
+     * @return \Monolog\LogRecord The processed record
      */
-    public function __invoke(array $record) {
+    public function __invoke(LogRecord $record) {
         $record['extra']['php_version'] = phpversion();
 
         return $record;

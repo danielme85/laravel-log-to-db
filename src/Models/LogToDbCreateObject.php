@@ -2,6 +2,8 @@
 
 namespace danielme85\LaravelLogToDB\Models;
 
+use Monolog\LogRecord;
+
 /**
  * Trait LogToDbCreateObject
  *
@@ -12,33 +14,19 @@ trait LogToDbCreateObject
     /**
      * Create a new log object
      *
-     * @param array $record
+     * @param \Monolog\LogRecord $record
      *
      * @return mixed
      */
-    public function generate(array $record)
+    public function generate(LogRecord $record)
     {
-        if (isset($record['message'])) {
-            $this->message = $record['message'];
-        }
-        if (!empty($record['context'])) {
-            $this->context = $record['context'];
-        }
-        if (isset($record['level'])) {
-            $this->level = $record['level'];
-        }
-        if (isset($record['level_name'])) {
-            $this->level_name = $record['level_name'];
-        }
-        if (isset($record['channel'])) {
-            $this->channel = $record['channel'];
-        }
-        if (isset($record['datetime'])) {
-            $this->datetime = $record['datetime'];
-        }
-        if (!empty($record['extra'])) {
-            $this->extra = $record['extra'];
-        }
+        $this->message = $record->message;
+        $this->context = $record->context;
+        $this->level = $record->level->value;
+        $this->level_name = $record->level->getName();
+        $this->channel = $record->channel;
+        $this->datetime = $record->datetime;
+        $this->extra = $record->extra;
         $this->unix_time = time();
 
         return $this;
@@ -185,5 +173,4 @@ trait LogToDbCreateObject
 
         return false;
     }
-
 }
