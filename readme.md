@@ -21,8 +21,8 @@ Uses Laravel native logging functionality trough [Monolog](https://github.com/Se
 * [Local Testing With Docker](#local-testing-with-docker)
 
 
-> :warning: This project should be backwards compatible down to and including Laravel 5.6 and php 7.1.
-> <br>However testing of current version and main branch is currently only with php 8.1 and Laravel 9.
+> :warning: For Laravel version 10 and beyond, please use version 4 or later of this package. 
+> <br> For Laravel version 5.6 to 9, please use version 3.x.x.
 
 ## Installation
 Use the composer require or add to composer.json. 
