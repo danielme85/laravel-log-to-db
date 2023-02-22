@@ -44,6 +44,6 @@ jobs:
 workflows:
   run_test:
     jobs:
-      -build
+      - build
 
 
