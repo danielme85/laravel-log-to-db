@@ -8,70 +8,19 @@ jobs:
   build:
     working_directory: /app
     docker:
-      - image: docker:17.05.0-ce-git
-    resource_class: small
+      - image: circleci/cci-demo-docker-primary:0.0.2
     steps:
       - checkout
-      - setup_remote_docker
       - run:
-          name: Install dependencies
+          name: Install Docker Compose
           command: |
-            apk add --no-cache \
-              py-pip=9.0.0-r1
-            pip install \
-              docker-compose==1.12.0 \
-              awscli==1.11.76 
+            set -x
+            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
 
-      - restore_cache:
-          keys:
-            - v1-{{ .Branch }}
-          paths:
-            - /caches/app.tar
-            - run:
-                name: Load Docker image layer cache
-                command: |
-                  set +o pipefail
-                  docker load -i /caches/app.tar | true
-            - run:
-                name: Build application Docker image
-                command: |
-                  cd ./docker/php8 && docker build --cache-from=app -t app .
-            - run:
-                name: Save Docker image layer cache
-                command: |
-                  mkdir -p /caches
-                  docker save -o /caches/app.tar app
-            - save_cache:
-                key: v1-{{ .Branch }}-{{ epoch }}
-                paths:
-                  - /caches/app.tar
       - run:
-          name: Start docker-compose
-          command: docker-compose up -d mariadb mongo
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            # "composer.lock" can be used if it is committed to the repo
-            - v1-dependencies-{{ checksum "composer.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      - run: composer install -n
-
-      - save_cache:
-          key: v1-dependencies-{{ checksum "composer.json" }}
-          paths:
-            - ./vendor
-      - run:
-          name: Run phpunit
-          command: |
-            cp .env.testing .env
-            dockerize -wait tcp://mariadb:3306 -timeout 1m &&
-            php -dpcov.enabled=1 -dpcov.directory="./src" -dpcov.exclude="~vendor~" ./vendor/bin/phpunit --verbose --debug --coverage-clover coverage.xml
-            curl -Os https://uploader.codecov.io/latest/linux/codecov
-            chmod +x codecov
-            ./codecov -t $CODECOV_TOKEN
-
-
-
+        name: Start docker containers
+        command: |
+          docker-compose up -d mariadb mongo
+          docker-compose up php8-circleci
+          docker-compose down
