@@ -19,8 +19,8 @@ jobs:
             chmod +x /usr/local/bin/docker-compose
 
       - run:
-        name: Start docker containers
-        command: |
-          docker-compose up -d mariadb mongo
-          docker-compose up php8-circleci
-          docker-compose down
+          name: Start docker containers
+          command: |
+            docker-compose up -d mariadb mongo
+            docker-compose up php8-circleci
+            docker-compose down
