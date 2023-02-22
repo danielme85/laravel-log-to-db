@@ -19,14 +19,8 @@
         "orchestra/testbench": "^8.0",
         "mockery/mockery": "^1.5",
         "nunomaduro/collision": "^7.0",
-        "jenssegers/mongodb": "dev-patch-1"
+        "jenssegers/mongodb": "dev-master"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/saulens22/laravel-mongodb.git"
-        }
-    ],
     "suggest": {
         "jenssegers/mongodb": "Adds support for MongoDB in Laravel/Eloquent"
     },
