@@ -3,12 +3,12 @@
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/danielme85/laravel-log-to-db.svg?style=flat-square)](https://packagist.org/packages/danielme85/laravel-log-to-db)
 [![GitHub release](https://img.shields.io/github/release/danielme85/laravel-log-to-db.svg?style=flat-square)](https://packagist.org/packages/danielme85/laravel-log-to-db)
 [![GitHub tag](https://img.shields.io/github/tag/danielme85/laravel-log-to-db.svg?style=flat-square)](https://github.com/danielme85/laravel-log-to-db)
-[![CircleCi](https://img.shields.io/circleci/build/github/danielme85/laravel-log-to-db?style=flat-square)](https://app.circleci.com/pipelines/github/danielme85/laravel-log-to-db)
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/danielme85/laravel-log-to-db?style=flat-square)](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db)
+[![buddy pipeline](https://app.buddy.works/mellum/laravel-log-to-db/pipelines/pipeline/428957/badge.svg?token=4dc1f653bedb370e80876dcda7d7c623a8cb67e2270e6255d9ceedba498cd884 "buddy pipeline")](https://app.buddy.works/mellum/laravel-log-to-db/pipelines/pipeline/428957)
 
-Custom Laravel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
-Uses Laravel native logging functionality.
+Hi, this is a custom Laravel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
+Uses Laravel native logging functionality trough [Monolog](https://github.com/Seldaek/monolog).
 
 * [Installation](#installation)
 * [Configuration](#configuration)
@@ -18,10 +18,11 @@ Uses Laravel native logging functionality.
 * [Log Cleanup](#log-cleanup)
 * [Processors](#processors)
 * [Lumen Installation](#lumen-installation)
+* [Local Testing With Docker](#local-testing-with-docker)
 
 
-> :warning: This project should be backwards compatible down to and including Laravel 5.6 and PHP 7.1.
-> <br>However testing of current version and master branch is only with PHP 7.3/7.4 and Laravel 8.
+> :warning: This project should be backwards compatible down to and including Laravel 5.6 and php 7.1.
+> <br>However testing of current version and main branch is currently only with php 8.1 and Laravel 9.
 
 ## Installation
 Use the composer require or add to composer.json. 
@@ -50,19 +51,36 @@ composer require jenssegers/mongodb
 ## Configuration
 Starting with Laravel 5.6 and later, you will have a new config file: "config/logging.php". 
 You will need to add an array under 'channels' for Log-to-DB here like so:
+```php 
+'database' => [
+    'driver' => 'custom',
+    'via' => danielme85\LaravelLogToDB\LogToDbHandler::class
+    ...
+    ],
+```
+These are the minimum required logging.php config settings to get started. Please note that the array index 'database' 
+can be whatever string you like as long as it is unique to this logging config. 
+You can also give the logging channel a name that later is referenced in a column in the DB table, this way you can have multiple 
+logging-to-db channels. 
+
 ```php
 'channels' => [
     'stack' => [
         'name' => 'Log Stack',
         'driver' => 'stack',
-        'channels' => ['database', 'file'],
+        'channels' => ['database', 'other-database', 'file'],
     ],
     'database' => [
         'driver' => 'custom',
         'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+        'name' => 'Basic DB Logging'
+    ],
+    'other-database' => [
+        'driver' => 'custom',
+        'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
         //'model' => App\Model\Log::class, //Your own optional custom model
         'level' => env('APP_LOG_LEVEL', 'debug'),
-        'name' => 'My DB Log',
+        'name' => 'My DB Log with a bunch more settings',
         'connection' => 'default',
         'collection' => 'log',
         'detailed' => true,
@@ -89,7 +107,7 @@ You will need to add an array under 'channels' for Log-to-DB here like so:
  * processors = Array of additional processors. These will add additional info into the 'extra' field in the logged data.
 [More information about processors](#processors)
  
-More info about some of these options: https://laravel.com/docs/6.x/logging#customizing-monolog-for-channels
+More info about some of these options: https://laravel.com/docs/9.x/logging#customizing-monolog-for-channels
 
 There are some default settings and more information about configuring the logger in the 'logtodb.php' config file.
 This could be copied to your project if you would like edit it with the vendor publish command.
@@ -306,6 +324,19 @@ LogToDB::model()->removeOlderThan('2019-01-01 23:00:00');
 
 ## Processors
 Monolog ships with a set of [processors](https://github.com/Seldaek/monolog/tree/master/src/Monolog/Processor), these will generate additional data and populate the 'extra' field.
+I've also added a couple of example processors in this pacage under src/Processors.
+To enable processors you can add them to the log config array:
+```php
+'database' => [
+    'driver' => 'custom',
+    'via' => danielme85\LaravelLogToDB\LogToDbHandler::class
+    ...
+    'processors' => [
+        \danielme85\LaravelLogToDB\Processors\PhpVersionProcessor::class,
+        Monolog\Processor\HostnameProcessor::class,
+    ]
+
+```
 
 You could also create your own custom processor, make sure they implement [Monolog\Processor\ProcessorInterface](https://github.com/Seldaek/monolog/blob/master/src/Monolog/Processor/ProcessorInterface.php).
 
@@ -397,6 +428,8 @@ You also need to make sure that all the needed basic config values for logtodb i
 * or just add all your log-to-db options in your applications config/logging.php file (probably easiest). Just follow the 
 configuration example above under the [configuration](#configuration) section.
   
+Since we are using Lumen we need to specify the config and service providers in the "bootstrap/app.php" file.
+
 ```
 /*
 |--------------------------------------------------------------------------
@@ -434,9 +467,9 @@ Next step is to register the service provider, either in bootstrap/app.php or in
 $app->register(\danielme85\LaravelLogToDB\ServiceProvider::class);
 ```
 
-After adding the service provider you should be able to run the database migration with:
+After adding the service provider you should be able to run the database migration in Lumen with:
 ```
-php artisan migrate
+php artisan migrate --path=vendor/danielme85/laravel-log-to-db/src/migrations/2018_08_11_003343_create_log_table.php
 ```
 Please note that you need a working db connection in Lumen at this point.
 
@@ -483,7 +516,19 @@ QUEUE_CONNECTION=redis
 CACHE_DRIVER=redis
 ```  
 
+## Local Testing With Docker
+There is a helper bash script called 'runLocalTestInDocker.sh', that runs the following docker commands:
+```
+docker-compose up -d mariadb mongo &&
+docker-compose up php7 &&
+docker-compose up php8 &&
+docker-compose down
+```
+To run Docker is required, give execute rights to the script and run:
+```
+chmod +x runLocalTestInDocker.sh && 
+./runLocalTestInDocker.sh
+```
 
-Development supported by:
-<br>
+### Development supported by:
 ![](https://media.giphy.com/media/3knKct3fGqxhK/giphy.gif)

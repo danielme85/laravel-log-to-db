@@ -150,7 +150,7 @@ class LogToDB
             } else if (!$detailed) {
                 $record['context'] = null;
             }
-            if ($this->config['queue']) {
+            if (!empty($this->config['queue'])) {
                 if (empty($this->config['queue_name']) && empty($this->config['queue_connection'])) {
                     dispatch(new SaveNewLogEvent($this, $record));
                 } else if (!empty($this->config['queue_name']) && !empty($this->config['queue_connection'])) {
