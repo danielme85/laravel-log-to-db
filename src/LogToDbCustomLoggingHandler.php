@@ -6,7 +6,7 @@ use danielme85\LaravelLogToDB\Models\DBLogException;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Handler\ErrorLogHandler;
-use Monolog\Logger;
+use Monolog\LogRecord;
 
 /**
  * Class LogToDbHandler
@@ -52,27 +52,30 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
     /**
      * Write the Log
      *
-     * @param array $record
+     * @param \Monolog\LogRecord $record
      * @throws DBLogException
      */
-    protected function write(array $record): void
+    protected function write(LogRecord $record): void
     {
         try {
             $log = new LogToDB($this->config);
             $log->newFromMonolog($record);
         } catch (\Exception $e) {
-            $this->emergencyLog([
-                'message' => 'There was an error while trying to write the log to a DB, log record pushed to error_log()',
-                'level' => Logger::CRITICAL,
-                'level_name' => 'critical',
-                'context' => LogToDB::parseIfException(['exception' => $e]),
-                'extra' => []
-            ]);
+
+            $this->emergencyLog(new LogRecord(
+                datetime: new \Monolog\DateTimeImmutable(true),
+                channel: '',
+                level: \Monolog\Level::Critical,
+                message: 'There was an error while trying to write the log to a DB, log record pushed to error_log()',
+                context: LogToDB::parseIfException(['exception' => $e]),
+                extra: []
+            ));
+            
             $this->emergencyLog($record);
         }
     }
 
-    protected function emergencyLog(array $record)
+    protected function emergencyLog(LogRecord $record)
     {
         $errorHandler = new ErrorLogHandler();
         $errorHandler->setFormatter(new LineFormatter('%level_name%: %message% %context%'));

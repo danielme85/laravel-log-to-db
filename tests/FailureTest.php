@@ -50,7 +50,7 @@ class FailureTest extends Orchestra\Testbench\TestCase
         ini_set('error_log', $backup);
 
         $this->assertStringContainsString(
-            'critical: There was an error while trying to write the log to a DB',
+            'CRITICAL: There was an error while trying to write the log to a DB',
             $result
         );
         $this->assertStringContainsString(

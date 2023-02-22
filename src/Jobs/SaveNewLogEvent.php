@@ -6,32 +6,21 @@ use danielme85\LaravelLogToDB\Models\DBLogException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Monolog\LogRecord;
 
 class SaveNewLogEvent implements ShouldQueue
 {
     use InteractsWithQueue, Queueable;
 
     /**
-     * @var object
-     */
-    protected $logToDb;
-
-    /**
-     * @var array
-     */
-    protected $record;
-
-    /**
      * Create a new job instance.
      *
      * @param object $logToDb
-     * @param array $record
+     * @param \Monolog\LogRecord $record
      * @return void
      */
-    public function __construct($logToDb, $record)
+    public function __construct(protected $logToDb, protected LogRecord $record)
     {
-        $this->logToDb = $logToDb;
-        $this->record = $record;
     }
 
     /**

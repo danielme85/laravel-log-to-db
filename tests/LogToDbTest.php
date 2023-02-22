@@ -5,6 +5,7 @@ use danielme85\LaravelLogToDB\Models\DBLogException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
+use Monolog\LogRecord;
 
 class LogToDbTest extends Orchestra\Testbench\TestCase
 {
@@ -311,16 +312,15 @@ class LogToDbTest extends Orchestra\Testbench\TestCase
     public function testSaveNewLogEventJob()
     {
         $logToDb = new LogToDB();
-        $record = [
-            'message' => 'job-test',
-            'context' => [],
-            'level' => 200,
-            'level_name' => 'INFO',
-            'channel' => 'local',
-            'datetime' => new Monolog\DateTimeImmutable(true),
-            'extra' => [],
-            'formatted' => "[2019-10-04T17:26:38.446827+00:00] local.INFO: test [] []\n"
-        ];
+        $record = new LogRecord(
+            datetime: new \Monolog\DateTimeImmutable(true),
+            message: 'job-test',
+            context: [],
+            level: \Monolog\Level::Info,
+            channel: 'local',
+            extra: [],
+            formatted: "[2019-10-04T17:26:38.446827+00:00] local.INFO: test [] []\n"
+        );
 
         $job = new SaveNewLogEvent($logToDb, $record);
         $job->handle();

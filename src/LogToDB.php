@@ -5,6 +5,7 @@ namespace danielme85\LaravelLogToDB;
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\Models\DBLog;
 use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
+use Monolog\LogRecord;
 
 /**
  * Class LogToDb
@@ -137,18 +138,32 @@ class LogToDB
     /**
      * Create a Eloquent Model
      *
-     * @param $record
+     * @param \Monolog\LogRecord $record
      * @return bool success
      */
-    public function newFromMonolog(array $record)
+    public function newFromMonolog(LogRecord $record)
     {
         $detailed = $this->getConfig('detailed');
 
         if (!empty($this->connection)) {
             if ($detailed && !empty($record['context']) && !empty($record['context']['exception'])) {
-                $record['context'] = self::parseIfException($record['context'], true);
+                $record = new LogRecord(
+                    $record->datetime,
+                    $record->channel,
+                    $record->level,
+                    $record->message,
+                    self::parseIfException($record->context, true),
+                    $record->extra
+                );
             } else if (!$detailed) {
-                $record['context'] = null;
+                $record = new LogRecord(
+                    $record->datetime,
+                    $record->channel,
+                    $record->level,
+                    $record->message,
+                    [],
+                    $record->extra
+                );
             }
             if (!empty($this->config['queue'])) {
                 if (empty($this->config['queue_name']) && empty($this->config['queue_connection'])) {
