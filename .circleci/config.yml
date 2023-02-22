@@ -8,6 +8,8 @@ jobs:
   build:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    machine:
+      image: ubuntu-2004:202101-01
     resource_class: arm.medium
     docker:
       # Specify the version you desire here
@@ -39,5 +41,9 @@ jobs:
       - run: chmod +x codecov
       - run: ./codecov -t $CODECOV_TOKEN
 
+workflows:
+  run_test:
+    jobs:
+      -build
 
 
