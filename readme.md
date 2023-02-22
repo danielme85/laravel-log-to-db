@@ -5,7 +5,7 @@
 [![GitHub tag](https://img.shields.io/github/tag/danielme85/laravel-log-to-db.svg?style=flat-square)](https://github.com/danielme85/laravel-log-to-db)
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/danielme85/laravel-log-to-db?style=flat-square)](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db)
-[![buddy pipeline](https://app.buddy.works/mellum/laravel-log-to-db/pipelines/pipeline/428957/badge.svg?token=4dc1f653bedb370e80876dcda7d7c623a8cb67e2270e6255d9ceedba498cd884 "buddy pipeline")](https://app.buddy.works/mellum/laravel-log-to-db/pipelines/pipeline/428957)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/danielme85/laravel-log-to-db/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/danielme85/laravel-log-to-db/tree/main)
 
 Hi, this is a custom Laravel 5.6+ Log channel handler that can store log events to SQL or MongoDB databases. 
 Uses Laravel native logging functionality trough [Monolog](https://github.com/Seldaek/monolog).
