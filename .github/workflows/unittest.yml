@@ -15,14 +15,6 @@ jobs:
         with:
           mongodb-version: 7.0
 
-      - name: Start Mariadb
-        uses: shogo82148/actions-setup-mysql@v1
-        with:
-          distribution: "mariadb"
-          mysql-version: "10.6"
-          user: root
-          password: root
-
       - name: Install composer and dependencies
         uses: php-actions/composer@v6
 
