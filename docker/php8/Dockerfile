@@ -3,7 +3,7 @@ FROM ubuntu:jammy
 LABEL Maintainer="Daniel Mellum <mellum@gmail.com>" \
       Description="A simple docker image used in phpunit testing Laravel apps."
 
-ENV DOCKERIZE_VERSION v0.6.1
+ENV DOCKERIZE_VERSION v0.7.0
 ENV TZ=America/New_York
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -11,7 +11,7 @@ WORKDIR /
 
 RUN apt update && apt upgrade -y
 RUN apt install -y curl git openssl openssh-client mysql-client bash libzip-dev zip wget \
-    php8.1 php8.1-dev php8.1-mysql php8.1-mongodb php8.1-curl php8.1-mbstring php8.1-pcov php8.1-cli
+    php8.2 php8.2-dev php8.2-mysql php8.2-mongodb php8.2-curl php8.2-mbstring php8.2-pcov php8.2-cli
 
 RUN pecl install pcov
 RUN pecl install mongodb
