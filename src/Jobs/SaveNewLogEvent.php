@@ -30,15 +30,6 @@ class SaveNewLogEvent implements ShouldQueue
      */
     public function handle()
     {
-        try {
-            $model = $this->logToDb->getModel();
-            $log = $model->generate(
-                $this->record,
-                $this->logToDb->getConfig('detailed')
-            );
-            $log->save();
-        } catch (\Throwable $e) {
-            throw new DBLogException($e->getMessage());
-        }
+        $this->logToDb->safeWrite($this->record);
     }
 }

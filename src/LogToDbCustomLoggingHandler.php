@@ -61,8 +61,7 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
             $log = new LogToDB($this->config);
             $log->newFromMonolog($record);
         } catch (\Exception $e) {
-
-            $this->emergencyLog(new LogRecord(
+            LogToDB::emergencyLog(new LogRecord(
                 datetime: new \Monolog\DateTimeImmutable(true),
                 channel: '',
                 level: \Monolog\Level::Critical,
@@ -70,15 +69,8 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
                 context: LogToDB::parseIfException(['exception' => $e]),
                 extra: []
             ));
-            
-            $this->emergencyLog($record);
-        }
-    }
 
-    protected function emergencyLog(LogRecord $record)
-    {
-        $errorHandler = new ErrorLogHandler();
-        $errorHandler->setFormatter(new LineFormatter('%level_name%: %message% %context%'));
-        $errorHandler->handle($record);
+            LogToDB::emergencyLog($record);
+        }
     }
 }
