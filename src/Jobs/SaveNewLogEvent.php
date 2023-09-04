@@ -19,7 +19,7 @@ class SaveNewLogEvent implements ShouldQueue
      * @param \Monolog\LogRecord $record
      * @return void
      */
-    public function __construct(protected $logToDb, protected LogRecord $record)
+    public function __construct(protected object $logToDb, protected LogRecord $record)
     {
     }
 

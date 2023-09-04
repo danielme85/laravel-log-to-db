@@ -132,7 +132,7 @@ class LogToDbTest extends TestCase
     {
         return [
             'danielme85\LaravelLogToDB\ServiceProvider',
-            'Jenssegers\Mongodb\MongodbServiceProvider',
+            'MongoDB\Laravel\MongodbServiceProvider',
         ];
     }
 

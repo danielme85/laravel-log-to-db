@@ -2,7 +2,7 @@
 
 namespace danielme85\LaravelLogToDB\Models;
 
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 /**
  * Class DbLog

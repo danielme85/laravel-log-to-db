@@ -19,7 +19,7 @@
         "orchestra/testbench": "^8.0",
         "mockery/mockery": "^1.5",
         "nunomaduro/collision": "^7.0",
-        "jenssegers/mongodb": "dev-master"
+        "mongodb/laravel-mongodb": "^4"
     },
     "suggest": {
         "jenssegers/mongodb": "Adds support for MongoDB in Laravel/Eloquent"
@@ -39,5 +39,5 @@
             }
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev"
 }
