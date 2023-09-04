@@ -26,15 +26,10 @@ jobs:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      redis:
-        image: redis
-        ports:
-          - 6379/tcp
-        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['7.4', '8.0', '8.1']
+        php-versions: ['8.2']
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -74,10 +69,9 @@ jobs:
         run: composer install --no-progress
 
       - name: Test with phpunit
-        run: vendor/bin/phpunit --coverage-text
+        run: vendor/bin/phpunit --coverage-xml
         env:
           DB_PORT: ${{ job.services.mysql.ports['3306'] }}
-          REDIS_PORT: ${{ job.services.redis.ports['6379'] }}
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v2
