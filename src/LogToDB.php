@@ -183,6 +183,7 @@ class LogToDB
                 }
             } else {
                 $this->safeWrite($record);
+                return true;
             }
         }
 
