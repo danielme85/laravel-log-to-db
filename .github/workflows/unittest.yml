@@ -10,6 +10,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.10.0
+        with:
+          mongodb-version: 7.0
+
+      - name: Start Mariadb
+        uses: shogo82148/actions-setup-mysql@v1
+        with:
+          distribution: "mariadb"
+          mysql-version: "10.6"
+          user: root
+          password: root
+
       - name: Install composer and dependencies
         uses: php-actions/composer@v6
 
