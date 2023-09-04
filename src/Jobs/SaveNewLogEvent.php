@@ -30,6 +30,6 @@ class SaveNewLogEvent implements ShouldQueue
      */
     public function handle()
     {
-        $this->logToDb->safeWrite($record);
+        $this->logToDb->safeWrite($this->record);
     }
 }
