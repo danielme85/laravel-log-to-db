@@ -5,6 +5,8 @@ namespace danielme85\LaravelLogToDB;
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\Models\DBLog;
 use danielme85\LaravelLogToDB\Models\DBLogMongoDB;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\ErrorLogHandler;
 use Monolog\LogRecord;
 
 /**
@@ -180,17 +182,39 @@ class LogToDB
                         ->onQueue($this->config['queue_name']);
                 }
             } else {
-                $model = $this->getModel();
-                $log = $model->generate(
-                    $record
-                );
-                if ($log->save()) {
-                    return true;
-                }
+                $this->safeWrite($record);
             }
         }
 
         return false;
+    }
+
+    public function safeWrite(LogRecord $record) {
+        try {
+            $model = $this->getModel();
+            $log = $model->generate(
+                $record
+            );
+            $log->save();
+        } catch (\Throwable $e) {
+            self::emergencyLog(new LogRecord(
+                                    datetime: new \Monolog\DateTimeImmutable(true),
+                                    channel: '',
+                                    level: \Monolog\Level::Critical,
+                                    message: 'There was an error while trying to write the log to a DB, log record pushed to error_log()',
+                                    context: LogToDB::parseIfException(['exception' => $e]),
+                                    extra: []
+                                ));
+
+            self::emergencyLog($record);
+        }
+    }
+
+    public static function emergencyLog(LogRecord $record)
+    {
+        $errorHandler = new ErrorLogHandler();
+        $errorHandler->setFormatter(new LineFormatter('%level_name%: %message% %context%'));
+        $errorHandler->handle($record);
     }
 
     /**
