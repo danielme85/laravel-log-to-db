@@ -6,6 +6,8 @@
  * Time: 2:35 PM
  */
 
+namespace TestModels;
+
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class LogMongo extends Eloquent

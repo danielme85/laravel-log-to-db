@@ -1,5 +1,7 @@
 <?php
 
+namespace TestModels;
+
 use danielme85\LaravelLogToDB\Models\LogToDbCreateObject;
 use Illuminate\Database\Eloquent\Model;
 

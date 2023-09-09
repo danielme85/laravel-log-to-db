@@ -1,5 +1,6 @@
 <?php
 
+use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\LogToDB;
 use danielme85\LaravelLogToDB\LogToDbHandler;
 use danielme85\LaravelLogToDB\Models\DBLogException;
@@ -7,7 +8,9 @@ use danielme85\LaravelLogToDB\Processors\PhpVersionProcessor;
 use Dotenv\Dotenv;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
-use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
+use TestModels\CustomEloquentModel;
+use TestModels\LogMongo;
+use TestModels\LogSql;
 use Monolog\LogRecord;
 use Monolog\Processor\HostnameProcessor;
 use Monolog\Processor\MemoryUsageProcessor;
