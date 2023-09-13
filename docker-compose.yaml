@@ -41,7 +41,7 @@ services:
       - DB_USERNAME=root
       - DB_PASSWORD=root
       - MDB_DATABASE=logtodb
-      - MDB_HOST=mongo
+      - MDB_HOST=mongodb
       - MDB_PORT=27017
     entrypoint: bash -c "
       cd /var/testing &&
