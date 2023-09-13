@@ -134,8 +134,8 @@ class LogToDbTest extends TestCase
     protected function getPackageProviders($app)
     {
         return [
-            'danielme85\LaravelLogToDB\ServiceProvider',
-            'MongoDB\Laravel\MongodbServiceProvider',
+            \danielme85\LaravelLogToDB\ServiceProvider::class,
+            \MongoDB\Laravel\MongoDBServiceProvider::class,
         ];
     }
 

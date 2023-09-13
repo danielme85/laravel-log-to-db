@@ -9,7 +9,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /
 
-RUN apt add-apt-repository ppa:ondrej/php -y
+RUN apt update && apt install -y lsb-release gnupg2 ca-certificates apt-transport-https software-properties-common
+RUN apt update && add-apt-repository ppa:ondrej/php
 RUN apt update && apt upgrade -y
 RUN apt install -y curl git openssl openssh-client mysql-client bash libzip-dev zip wget
 RUN apt install -y php8.2 php8.2-dev php8.2-mysql php8.2-mongodb php8.2-curl php8.2-mbstring php8.2-pcov php8.2-cli
