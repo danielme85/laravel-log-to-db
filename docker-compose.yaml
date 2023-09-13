@@ -7,20 +7,17 @@ services:
     container_name: laravel-log-to-db-mariadb
     networks:
       - laravel-log-to-db-testing
-    ports:
-      - "3366:3306"
+
     environment:
       MYSQL_DATABASE: 'logtodb'
       MYSQL_ROOT_PASSWORD: 'root'
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
-  mongo:
+  mongodb:
     image: mongo:latest
     container_name: laravel-log-to-db-mongodb
     networks:
       - laravel-log-to-db-testing
-    ports:
-      - "27888:27017"
 
   php8:
     image: ghcr.io/danielme85/lltdb-testbench
@@ -28,7 +25,7 @@ services:
     tty: true
     depends_on:
       - "mariadb"
-      - "mongo"
+      - "mongodb"
     networks:
       - laravel-log-to-db-testing
     volumes:
