@@ -13,7 +13,7 @@ services:
       MYSQL_ROOT_PASSWORD: 'root'
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
-  mongodb:
+  mongo:
     image: mongo:latest
     container_name: laravel-log-to-db-mongodb
     networks:
@@ -25,7 +25,7 @@ services:
     tty: true
     depends_on:
       - "mariadb"
-      - "mongodb"
+      - "mongo"
     networks:
       - laravel-log-to-db-testing
     volumes:
@@ -38,7 +38,7 @@ services:
       - DB_USERNAME=root
       - DB_PASSWORD=root
       - MDB_DATABASE=logtodb
-      - MDB_HOST=mongodb
+      - MDB_HOST=mongo
       - MDB_PORT=27017
     entrypoint: bash -c "
       cd /var/testing &&
