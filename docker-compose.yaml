@@ -23,6 +23,8 @@ services:
     image: ghcr.io/danielme85/lltdb-testbench
     container_name: laravel-log-to-db-php8
     tty: true
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     depends_on:
       - "mariadb"
       - "mongo"
