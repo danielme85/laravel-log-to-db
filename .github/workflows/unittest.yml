@@ -56,7 +56,7 @@ jobs:
         run: composer install --no-progress
 
       - name: Test with workbench
-        run: vendor/bin/testbench package:test --coverage-clover ./coverage.xml
+        run: vendor/bin/phpunit --coverage-clover ./coverage.xml
         env:
           DB_PORT: ${{ job.services.mysql.ports['3306'] }}
 

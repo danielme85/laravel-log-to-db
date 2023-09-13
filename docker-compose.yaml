@@ -44,7 +44,7 @@ services:
       cd /var/testing &&
       composer install --no-interaction &&
       dockerize -wait tcp://mariadb:3306 -timeout 1m &&
-      ./vendor/bin/testbench package:test
+      ./vendor/bin/phpunit
       "
 
 networks:
