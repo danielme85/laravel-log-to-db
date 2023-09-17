@@ -13,14 +13,16 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
   logto-mongodb:
-    image: nertworkweb/mongodb-no-avx:latest
+    image: mongo:latest
     container_name: logto-mongodb
     networks:
       - laravel-log-to-db-testing
 
   php8:
-    image: ghcr.io/danielme85/lltdb-testbench
+    build:
+      dockerfile: ./docker/php8/Dockerfile
     container_name: laravel-log-to-db-php8
+    tty: true
     networks:
       - laravel-log-to-db-testing
     volumes:
@@ -28,6 +30,8 @@ services:
     depends_on:
       - logto-mariadb
       - logto-mongodb
+    environment:
+      WAIT_HOSTS: logto-mariadb:3306, logto-mongodb:27017
     entrypoint: bash -c "
       /wait &&
       cd /var/testing &&

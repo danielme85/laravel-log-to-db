@@ -16,6 +16,7 @@
     },
     "require-dev": {
         "ext-mongodb": "*",
+        "phpunit/phpunit": "9.*",
         "orchestra/testbench": "^8.0",
         "mockery/mockery": "^1.5",
         "nunomaduro/collision": "^7.0",
