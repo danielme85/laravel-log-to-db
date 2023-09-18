@@ -2,52 +2,50 @@
 version: "3.0"
 services:
 
-  mariadb:
+  logto-mariadb:
     image: mariadb:latest
-    container_name: laravel-log-to-db-mariadb
+    container_name: logto-mariadb
     networks:
       - laravel-log-to-db-testing
-    ports:
-      - "3366:3306"
     environment:
       MYSQL_DATABASE: 'logtodb'
       MYSQL_ROOT_PASSWORD: 'root'
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
-  mongo:
+  logto-mongodb:
     image: mongo:latest
-    container_name: laravel-log-to-db-mongodb
+    container_name: logto-mongodb
     networks:
       - laravel-log-to-db-testing
-    ports:
-      - "27888:27017"
 
   php8:
-    image: ghcr.io/danielme85/lltdb-testbench
+    build:
+      dockerfile: ./docker/php8/Dockerfile
     container_name: laravel-log-to-db-php8
     tty: true
-    depends_on:
-      - "mariadb"
-      - "mongo"
     networks:
       - laravel-log-to-db-testing
     volumes:
       - .:/var/testing
+    depends_on:
+      - logto-mariadb
+      - logto-mongodb
     environment:
-      - DB_CONNECTION=mysql
-      - DB_HOST=mariadb
-      - DB_PORT=3306
-      - DB_DATABASE=logtodb
-      - DB_USERNAME=root
-      - DB_PASSWORD=root
-      - MDB_DATABASE=logtodb
-      - MDB_HOST=mongo
-      - MDB_PORT=27017
+      WAIT_HOSTS: logto-mariadb:3306, logto-mongodb:27017
+      DB_CONNECTION: mysql
+      DB_HOST: logto-mariadb
+      DB_PORT: 3306
+      DB_DATABASE: logtodb
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      MDB_DATABASE: logtodb
+      MDB_HOST: logto-mongodb
+      MDB_PORT: 27017
     entrypoint: bash -c "
+      /wait &&
       cd /var/testing &&
       composer install --no-interaction &&
-      dockerize -wait tcp://mariadb:3306 -timeout 1m &&
-      ./vendor/bin/testbench package:test
+      ./vendor/bin/phpunit
       "
 
 networks:

@@ -6,6 +6,8 @@
  * Time: 2:35 PM
  */
 
+namespace TestModels;
+
 use Illuminate\Database\Eloquent\Model;
 
 class LogSql extends Model

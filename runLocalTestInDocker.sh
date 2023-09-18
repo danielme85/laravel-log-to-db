@@ -1,4 +1,4 @@
 #!/bin/bash
-docker-compose up -d mariadb mongo &&
-docker-compose up php8 &&
-docker-compose down
+docker compose up -d logto-mariadb logto-mongodb &&
+docker compose up php8 &&
+docker compose down
