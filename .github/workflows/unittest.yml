@@ -6,13 +6,13 @@ jobs:
     name: Laravel (PHP ${{ matrix.php-versions }})
     runs-on: ubuntu-latest
     env:
-      DB_DATABASE: laravel
+      DB_DATABASE: logtodb
       DB_USERNAME: root
-      DB_PASSWORD: password
+      DB_PASSWORD: root
       BROADCAST_DRIVER: log
-      CACHE_DRIVER: redis
-      QUEUE_CONNECTION: redis
-      SESSION_DRIVER: redis
+      CACHE_DRIVER: file
+      QUEUE_CONNECTION: file
+      SESSION_DRIVER: file
 
     # Docs: https://docs.github.com/en/actions/using-containerized-services
     services:
@@ -20,8 +20,8 @@ jobs:
         image: mysql:latest
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: false
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: laravel
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: logtodb
         ports:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -55,7 +55,7 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-progress
 
-      - name: Test with workbench
+      - name: Test with phpunit
         run: vendor/bin/phpunit --coverage-clover ./coverage.xml
         env:
           DB_PORT: ${{ job.services.mysql.ports['3306'] }}
