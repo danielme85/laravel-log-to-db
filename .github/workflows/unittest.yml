@@ -59,7 +59,9 @@ jobs:
       #   run: sudo systemctl start mysql.service
 
       - name: Install Composer dependencies
-        run: composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --no-progress
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction --no-progress
 
       - name: Test with phpunit
         run: vendor/bin/phpunit --coverage-clover ./coverage.xml
