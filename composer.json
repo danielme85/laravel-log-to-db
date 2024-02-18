@@ -39,6 +39,11 @@
             "danielme85\\LaravelLogToDB\\": "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "TestModels\\": "tests/TestModels"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
