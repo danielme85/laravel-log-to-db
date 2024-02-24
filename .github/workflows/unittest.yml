@@ -3,7 +3,7 @@ name: Testing Laravel with MySQL
 on: [pull_request]
 jobs:
   laravel:
-    name: Laravel (PHP ${{ matrix.php-versions }})
+    name: Laravel ${{ matrix.laravel }} (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
     env:
       DB_DATABASE: logtodb
@@ -29,10 +29,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['8.2']
+        laravel: [ ^10.0, ^11.0 ]
+        php: ['8.2', '8.3']
+        include:
+          - laravel: ^10.0
+            testbench: ^8.0
+          - laravel: ^11.0
+            testbench: ^9.0
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
@@ -43,7 +49,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php }}
           extensions: mbstring, dom, fileinfo, mysql, mongodb
           coverage: xdebug
 
@@ -53,7 +59,9 @@ jobs:
       #   run: sudo systemctl start mysql.service
 
       - name: Install Composer dependencies
-        run: composer install --no-progress
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction --no-progress
 
       - name: Test with phpunit
         run: vendor/bin/phpunit --coverage-clover ./coverage.xml
