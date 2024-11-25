@@ -86,7 +86,7 @@ class LogToDB
      *
      * @return DBLog|DBLogMongoDB
      */
-    public static function model(string $channel = null, string $connection = 'default', string $collection = null)
+    public static function model(?string $channel = null, string $connection = 'default', ?string $collection = null)
     {
         $conn = null;
         $coll = null;
