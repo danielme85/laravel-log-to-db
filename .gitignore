@@ -16,4 +16,4 @@ coverage.xml
 _ide_helper.php
 _ide_helper_models.php.php
 .phpunit.result.cache
-.phpunit.cache
+.phpunit.cache/*
