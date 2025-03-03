@@ -332,7 +332,7 @@ class LogToDbTest extends TestCase
             formatted: "[2019-10-04T17:26:38.446827+00:00] local.INFO: test [] []\n",
         );
 
-        $job = new SaveNewLogEvent($logToDb, $record);
+        $job = new SaveNewLogEvent($record);
         $job->handle();
 
         $this->assertNotEmpty($logToDb->model()->where('message', '=', 'job-test')->get());
