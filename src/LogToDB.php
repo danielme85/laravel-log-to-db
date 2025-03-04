@@ -169,16 +169,16 @@ class LogToDB
             }
             if (!empty($this->config['queue'])) {
                 if (empty($this->config['queue_name']) && empty($this->config['queue_connection'])) {
-                    dispatch(new SaveNewLogEvent($this, $record));
+                    dispatch(new SaveNewLogEvent($record));
                 } else if (!empty($this->config['queue_name']) && !empty($this->config['queue_connection'])) {
-                    dispatch(new SaveNewLogEvent($this, $record))
+                    dispatch(new SaveNewLogEvent($record))
                         ->onConnection($this->config['queue_connection'])
                         ->onQueue($this->config['queue_name']);
                 } else if (!empty($this->config['queue_connection'])) {
-                    dispatch(new SaveNewLogEvent($this, $record))
+                    dispatch(new SaveNewLogEvent($record))
                         ->onConnection($this->config['queue_connection']);
                 } else if (!empty($this->config['queue_name'])) {
-                    dispatch(new SaveNewLogEvent($this, $record))
+                    dispatch(new SaveNewLogEvent($record))
                         ->onQueue($this->config['queue_name']);
                 }
             } else {
