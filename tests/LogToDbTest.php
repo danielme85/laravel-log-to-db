@@ -452,8 +452,11 @@ class LogToDbTest extends TestCase
     public function testStandAloneModels()
     {
         Log::info("This is a info log message...");
+
+        $modelMongo = LogToDB::model(null, 'mongodb');
+
         $this->assertNotEmpty(LogSql::get()->toArray());
-        $this->assertNotEmpty(LogMongo::get()->toArray());
+        $this->assertNotEmpty($modelMongo->get()->toArray());
     }
 
     /**

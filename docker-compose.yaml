@@ -1,7 +1,5 @@
 ---
-version: "3.0"
 services:
-
   logto-mariadb:
     image: mariadb:latest
     container_name: logto-mariadb
@@ -20,7 +18,7 @@ services:
 
   php8:
     build:
-      dockerfile: ./docker/php8/Dockerfile
+      context: docker/php8
     container_name: laravel-log-to-db-php8
     tty: true
     networks:
