@@ -29,13 +29,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        laravel: [ ^10.0, ^11.0 ]
-        php: ['8.2', '8.3']
+        laravel: [^11.0, ^12.0]
+        php: [8.3, 8.4]
         include:
-          - laravel: ^10.0
-            testbench: ^8.0
           - laravel: ^11.0
             testbench: ^9.0
+          - laravel: ^12.0
+            testbench: ^10.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4

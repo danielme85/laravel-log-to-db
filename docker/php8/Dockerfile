@@ -13,7 +13,7 @@ RUN apt update && apt install -y lsb-release gnupg2 ca-certificates apt-transpor
 RUN apt update && add-apt-repository ppa:ondrej/php
 RUN apt update && apt upgrade -y
 RUN apt install -y curl git openssl openssh-client mysql-client bash libzip-dev zip wget
-RUN apt install -y php8.2 php8.2-dev php8.2-mysql php8.2-mongodb php8.2-curl php8.2-mbstring php8.2-pcov php8.2-cli
+RUN apt install -y php8.3 php8.3-dev php8.3-mysql php8.3-mongodb php8.3-curl php8.3-mbstring php8.3-pcov php8.3-cli
 
 RUN pecl install pcov
 RUN pecl install mongodb
@@ -30,8 +30,3 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
 RUN chmod +x /wait
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
