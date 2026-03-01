@@ -93,8 +93,10 @@ trait LogToDbCreateObject
     private function jsonEncodeIfNotEmpty($value)
     {
         if (!empty($value)) {
-            return @json_encode($value) ?? null;
+            return json_encode($value) ?: null;
         }
+
+        return null;
     }
 
     /**

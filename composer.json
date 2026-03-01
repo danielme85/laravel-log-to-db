@@ -32,7 +32,7 @@
         "mongodb/laravel-mongodb": ">=4"
     },
     "suggest": {
-        "jenssegers/mongodb": "Adds support for MongoDB in Laravel/Eloquent"
+        "mongodb/laravel-mongodb": "Adds support for MongoDB in Laravel/Eloquent"
     },
     "autoload": {
         "psr-4": {
@@ -41,6 +41,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Tests\\": "tests",
             "TestModels\\": "tests/TestModels"
         }
     },

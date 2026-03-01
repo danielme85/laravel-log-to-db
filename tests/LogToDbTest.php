@@ -2,22 +2,16 @@
 
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\LogToDB;
-use danielme85\LaravelLogToDB\LogToDbHandler;
 use danielme85\LaravelLogToDB\Models\DBLogException;
-use danielme85\LaravelLogToDB\Processors\PhpVersionProcessor;
-use Dotenv\Dotenv;
+use danielme85\LaravelLogToDB\Processors\AuthenticatedUserProcessor;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use TestModels\CustomEloquentModel;
-use TestModels\LogMongo;
 use TestModels\LogSql;
 use Monolog\LogRecord;
-use Monolog\Processor\HostnameProcessor;
-use Monolog\Processor\MemoryUsageProcessor;
-use Orchestra\Testbench\TestCase;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class LogToDbTest extends TestCase
+class LogToDbTest extends Tests\TestCase
 {
     /**
      * Setup the test environment.
@@ -26,6 +20,10 @@ class LogToDbTest extends TestCase
     {
         parent::setUp();
         $this->loadMigrationsFrom(__DIR__.'/../src/migrations');
+
+        // Truncate tables so each test starts clean
+        LogToDB::model()->truncate();
+        LogToDB::model('mongodb')->truncate();
     }
 
     /**
@@ -39,107 +37,6 @@ class LogToDbTest extends TestCase
     }
 
     /**
-     * Define environment setup.
-     *
-     * @param \Illuminate\Foundation\Application $app
-     *
-     * @return void
-     */
-    protected function defineEnvironment($app)
-    {
-        $dotenv = Dotenv::createImmutable(__DIR__.'/../', '.env.testing');
-        $dotenv->load();
-
-        $app['config']->set('database.default', 'mysql');
-        $app['config']->set('database.connections',
-            ['mysql' => [
-                'driver' => 'mysql',
-                'host' => env('DB_HOST', '127.0.0.1'),
-                'port' => env('DB_PORT', 3306),
-                'database' => env('DB_DATABASE', 'testing'),
-                'username' => env('DB_USERNAME', 'root'),
-                'password' => env('DB_PASSWORD', ''),
-                'charset' => 'utf8',
-                'collation' => 'utf8_unicode_ci',
-            ],
-                'mongodb' => [
-                    'driver' => 'mongodb',
-                    'host' => env('MDB_HOST', '127.0.0.1'),
-                    'port' => env('MDB_PORT', 27017),
-                    'database' => env('MDB_DATABASE', 'testing'),
-                    'username' => env('MDB_USER', ''),
-                    'password' => env('MDB_PASSWORD', ''),
-                    'options' => [
-                        'database' => 'admin' // sets the authentication database required by mongo 3
-                    ]
-                ],
-            ]);
-
-        $app['config']->set('logging.default', 'stack');
-        $app['config']->set('logging.channels', [
-            'stack' => [
-                'driver' => 'stack',
-                'channels' => ['database', 'mongodb'],
-            ],
-            'database' => [
-                'driver' => 'custom',
-                'via' => LogToDbHandler::class,
-                'level' => 'debug',
-                'connection' => 'default',
-                'collection' => 'log',
-                'max_records' => 10,
-                'max_hours' => 1,
-                'processors' => [
-                    HostnameProcessor::class,
-                    MemoryUsageProcessor::class,
-                    PhpVersionProcessor::class
-                ]
-            ],
-            'mongodb' => [
-                'driver' => 'custom',
-                'via' => LogToDbHandler::class,
-                'level' => 'debug',
-                'connection' => 'mongodb',
-                'collection' => 'log',
-                'max_records' => 10,
-                'max_hours' => 1,
-                'processors' => [
-                    HostnameProcessor::class
-                ]
-            ],
-            'limited' => [
-                'driver' => 'custom',
-                'via' => LogToDbHandler::class,
-                'level' => 'warning',
-                'detailed' => false,
-                'max_records' => false,
-                'max_hours' => false,
-                'name' => 'limited',
-            ]
-        ]);
-
-        $app['config']->set('logtodb', include __DIR__.'/../src/config/logtodb.php');
-    }
-
-    /**
-     * Get package providers.  At a minimum this is the package being tested, but also
-     * would include packages upon which our package depends, e.g. Cartalyst/Sentry
-     * In a normal app environment these would be added to the 'providers' array in
-     * the config/app.php8 file.
-     *
-     * @param \Illuminate\Foundation\Application $app
-     *
-     * @return array
-     */
-    protected function getPackageProviders($app)
-    {
-        return [
-            \danielme85\LaravelLogToDB\ServiceProvider::class,
-            \MongoDB\Laravel\MongoDBServiceProvider::class,
-        ];
-    }
-
-    /**
      * Basic test to see if class can be instanced.
      *
      * @group basic
@@ -148,10 +45,6 @@ class LogToDbTest extends TestCase
     {
         $this->assertInstanceOf(LogToDB::class, app('laravel-log-to-db'));
         $this->assertInstanceOf(LogToDB::class, new LogToDB());
-
-        //Class works, now lets cleanup possible failed test
-        LogToDB::model()->truncate();
-        LogToDB::model('mongodb')->truncate();
     }
 
     /**
@@ -340,26 +233,17 @@ class LogToDbTest extends TestCase
 
 
     /**
-     * Test model interaction
+     * Test model attribute types from a single log record.
      *
      * @group model
      */
-    public function testModelInteraction()
+    public function testModelAttributeTypes()
     {
-        LogToDB::model()->truncate();
-        LogToDB::model('mongodb')->truncate();
-
-        for ($i=1; $i<=10; $i++) {
-            Log::debug("This is debug log message...");
-        }
-        for ($i=1; $i<=10; $i++) {
-            Log::info("This is info log message...");
-        }
-
+        Log::debug("This is a test log message for attribute type checking");
 
         $model = LogToDB::model();
-
         $log = $model->first();
+
         $this->assertIsNumeric($log->id);
         $this->assertIsString($log->message);
         $this->assertIsString($log->channel);
@@ -370,80 +254,82 @@ class LogToDbTest extends TestCase
         $this->assertIsArray($log->extra);
         $this->assertNotEmpty($log->created_at);
         $this->assertNotEmpty($log->updated_at);
-        $this->assertDatabaseCount('log', 20);
+    }
 
+    /**
+     * Test model access by channel name.
+     *
+     * @group model
+     */
+    public function testModelAccessByChannel()
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            Log::debug("Channel access test message");
+        }
 
-        //Get all
-        $all = $model->get();
-        $this->assertNotEmpty($all->toArray());
-        //Get Debug
-        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
-        $this->assertNotEmpty($logs);
-        $this->assertEquals('DEBUG', $logs[0]['level_name']);
-        $this->assertCount(10, $logs);
-
+        // MySQL via 'database' channel
         $model = LogToDB::model('database');
-        //Get all
-        $all = $model->get();
-        $this->assertNotEmpty($all->toArray());
-        //Get Debug
         $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
-        $this->assertCount(10, $logs);
+        $this->assertCount(5, $logs);
 
-
-        $model = LogToDB::model(null, 'mysql');
-        //Get all
-        $all = $model->get();
-        $this->assertNotEmpty($all->toArray());
-        //Get Debug
-        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
-        $this->assertNotEmpty($logs);
-        $this->assertEquals('DEBUG', $logs[0]['level_name']);
-
-        $model = LogToDB::model('database', 'mysql', 'log');
-        //Get all
-        $all = $model->get();
-        $this->assertNotEmpty($all->toArray());
-        //Get Debug
-        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
-        $this->assertNotEmpty($logs);
-        $this->assertEquals('DEBUG', $logs[0]['level_name']);
-        $this->assertCount(10, $logs);
-
-        //Same tests for mongoDB
+        // MongoDB via 'mongodb' channel
         $modelMongo = LogToDB::model('mongodb');
-        //Get all
-        $all = $modelMongo->get();
-        $this->assertNotEmpty($all->toArray());
-        //Get Debug
         $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
-        $this->assertCount(10, $logs);
+        $this->assertCount(5, $logs);
+    }
 
-        //Same tests for mongoDB
-        $modelMongo = LogToDB::model('mongodb', 'mongodb', 'log');
-        //Get all
-        $all = $modelMongo->get();
+    /**
+     * Test model access by connection name.
+     *
+     * @group model
+     */
+    public function testModelAccessByConnection()
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            Log::debug("Connection access test message");
+        }
+
+        // MySQL via connection
+        $model = LogToDB::model(null, 'mysql');
+        $all = $model->get();
         $this->assertNotEmpty($all->toArray());
-        //Get Debug
-        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
-        $this->assertNotEmpty($logs);
-        $this->assertEquals('DEBUG', $logs[0]['level_name']);
-        $this->assertCount(10, $logs);
 
-        //Same tests for mongoDB
+        // MongoDB via connection
         $modelMongo = LogToDB::model(null, 'mongodb');
-        //Get all
-        $all = $modelMongo->get();
-        $this->assertNotEmpty($all->toArray());
-        //Get Debug
         $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
         $this->assertNotEmpty($logs);
         $this->assertEquals('DEBUG', $logs[0]['level_name']);
-        $this->assertCount(10, $logs);
+        $this->assertCount(5, $logs);
+    }
+
+    /**
+     * Test model access by channel, connection, and collection combined.
+     *
+     * @group model
+     */
+    public function testModelAccessByChannelConnectionCollection()
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            Log::debug("Combined access test message");
+        }
+
+        // MySQL with all params
+        $model = LogToDB::model('database', 'mysql', 'log');
+        $logs = $model->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(5, $logs);
+
+        // MongoDB with all params
+        $modelMongo = LogToDB::model('mongodb', 'mongodb', 'log');
+        $logs = $modelMongo->where('level_name', '=', 'DEBUG')->get()->toArray();
+        $this->assertNotEmpty($logs);
+        $this->assertEquals('DEBUG', $logs[0]['level_name']);
+        $this->assertCount(5, $logs);
     }
 
     /**
@@ -478,44 +364,85 @@ class LogToDbTest extends TestCase
     {
         $this->assertFalse(LogToDB::model()->removeOldestIfMoreThan(1000));
 
-        Log::debug("This is an test DEBUG log event");
-        Log::info("This is an test INFO log event");
-        Log::notice("This is an test NOTICE log event");
-
-        //sleep to pass time for record cleanup testing based on time next.
-        sleep(1);
+        // Insert records with past unix_time directly instead of sleeping
+        $thePast = \Carbon\Carbon::now()->subSeconds(5);
+        for ($i = 0; $i < 3; $i++) {
+            $log = LogToDB::model();
+            $log->message = "Test remove message {$i}";
+            $log->channel = 'test';
+            $log->level = 100;
+            $log->level_name = 'DEBUG';
+            $log->unix_time = $thePast->unix();
+            $log->datetime = new \Monolog\DateTimeImmutable(true);
+            $log->created_at = $thePast->toDateTimeString();
+            $log->updated_at = $thePast->toDateTimeString();
+            $log->save();
+        }
 
         $this->assertTrue(LogToDB::model()->removeOldestIfMoreThan(2));
         $this->assertEquals(2, LogToDB::model()->count());
         $this->assertTrue(LogToDB::model()->removeOlderThan(date('Y-m-d H:i:s')));
         $this->assertEquals(0, LogToDB::model()->count());
 
-        //Same tests on mongodb
+        // Same tests on mongodb
+        $thePast = \Carbon\Carbon::now()->subSeconds(5);
+        for ($i = 0; $i < 3; $i++) {
+            $log = LogToDB::model('mongodb');
+            $log->message = "Test remove message {$i}";
+            $log->channel = 'test';
+            $log->level = 100;
+            $log->level_name = 'DEBUG';
+            $log->unix_time = $thePast->unix();
+            $log->datetime = new \Monolog\DateTimeImmutable(true);
+            $log->created_at = $thePast->toDateTimeString();
+            $log->updated_at = $thePast->toDateTimeString();
+            $log->save();
+        }
+
         $this->assertTrue(LogToDB::model('mongodb')->removeOldestIfMoreThan(2));
         $this->assertEquals(2, LogToDB::model('mongodb')->count());
         $this->assertTrue(LogToDB::model('mongodb')->removeOlderThan(date('Y-m-d H:i:s')));
         $this->assertEquals(0, LogToDB::model('mongodb')->count());
 
-
-        //test wrappers for silly spelling
-        Log::debug("This is an test DEBUG log event");
-        Log::info("This is an test INFO log event");
-        Log::notice("This is an test NOTICE log event");
-
-        //sleep to pass time for record cleanup testing based on time next.
-        sleep(1);
+        // Test wrappers for silly spelling
+        $thePast = \Carbon\Carbon::now()->subSeconds(5);
+        for ($i = 0; $i < 3; $i++) {
+            $log = LogToDB::model();
+            $log->message = "Test remove message {$i}";
+            $log->channel = 'test';
+            $log->level = 100;
+            $log->level_name = 'DEBUG';
+            $log->unix_time = $thePast->unix();
+            $log->datetime = new \Monolog\DateTimeImmutable(true);
+            $log->created_at = $thePast->toDateTimeString();
+            $log->updated_at = $thePast->toDateTimeString();
+            $log->save();
+        }
 
         $this->assertTrue(LogToDB::model()->removeOldestIfMoreThen(2));
         $this->assertEquals(2, LogToDB::model()->count());
         $this->assertTrue(LogToDB::model()->removeOlderThen(date('Y-m-d H:i:s')));
         $this->assertEquals(0, LogToDB::model()->count());
 
-        //Same tests on mongodb
+        // Same tests on mongodb (silly spelling)
+        $thePast = \Carbon\Carbon::now()->subSeconds(5);
+        for ($i = 0; $i < 3; $i++) {
+            $log = LogToDB::model('mongodb');
+            $log->message = "Test remove message {$i}";
+            $log->channel = 'test';
+            $log->level = 100;
+            $log->level_name = 'DEBUG';
+            $log->unix_time = $thePast->unix();
+            $log->datetime = new \Monolog\DateTimeImmutable(true);
+            $log->created_at = $thePast->toDateTimeString();
+            $log->updated_at = $thePast->toDateTimeString();
+            $log->save();
+        }
+
         $this->assertTrue(LogToDB::model('mongodb')->removeOldestIfMoreThen(2));
         $this->assertEquals(2, LogToDB::model('mongodb')->count());
         $this->assertTrue(LogToDB::model('mongodb')->removeOlderThen(date('Y-m-d H:i:s')));
         $this->assertEquals(0, LogToDB::model('mongodb')->count());
-
     }
 
     /**
@@ -584,20 +511,26 @@ class LogToDbTest extends TestCase
     }
 
     /**
-     * Clear all data from the test.
+     * Test AuthenticatedUserProcessor adds user to extra.
      *
-     * @group cleanerUpper
+     * @group basic
      */
-    public function testFinalCleanup()
+    public function testAuthenticatedUserProcessor()
     {
-        LogToDB::model()->truncate();
-        LogToDB::model('mongodb')->truncate();
+        $processor = new AuthenticatedUserProcessor();
 
-        $this->assertEmpty(LogToDB::model()->get()->toArray());
-        $this->assertEmpty(LogToDB::model('mongodb')->get()->toArray());
-        $this->assertEmpty(LogToDB::model('limited')->get()->toArray());
-        $this->assertEmpty(LogToDB::model('database')->get()->toArray());
+        $record = new LogRecord(
+            datetime: new \Monolog\DateTimeImmutable(true),
+            channel: 'test',
+            level: \Monolog\Level::Info,
+            message: 'test',
+            context: [],
+            extra: [],
+        );
 
-        $this->artisan('migrate:rollback', ['--database' => 'mysql']);
+        $result = $processor($record);
+
+        $this->assertArrayHasKey('user', $result->extra);
+        $this->assertNull($result->extra['user']);
     }
 }

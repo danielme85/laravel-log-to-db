@@ -11,9 +11,6 @@ namespace danielme85\LaravelLogToDB\Models;
 
 trait BindsDynamically
 {
-    protected $connection = null;
-    protected $table = null;
-
     public function bind(string $connection, string $table)
     {
         $this->setConnection($connection);
@@ -25,6 +22,7 @@ trait BindsDynamically
         // Overridden in order to allow for late table binding.
 
         $model = parent::newInstance($attributes, $exists);
+        $model->setConnection($this->connection);
         $model->setTable($this->table);
 
         return $model;

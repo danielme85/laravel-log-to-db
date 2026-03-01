@@ -9,6 +9,7 @@
         <testsuite name="Test Suite danielme85/laravel-log-to-db">
             <directory suffix=".php">./tests/</directory>
             <exclude>./tests/TestModels</exclude>
+            <exclude>./tests/TestCase.php</exclude>
         </testsuite>
     </testsuites>
     <source>

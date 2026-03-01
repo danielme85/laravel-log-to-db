@@ -31,7 +31,7 @@ class LogToDbHandler
 
         return new Logger($config['name'] ?? 'LogToDB',
             [
-                new LogToDbCustomLoggingHandler($config, $processors)
+                new LogToDbCustomLoggingHandler($config)
             ],
                 $processors
             );

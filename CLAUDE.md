@@ -1,0 +1,78 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Laravel package that provides a Monolog-based logging channel to write Laravel log events to a database (SQL or MongoDB). Published as `danielme85/laravel-log-to-db`.
+
+## Commands
+
+### Install dependencies
+```bash
+composer install
+```
+
+### Run tests (requires MySQL and MongoDB running locally)
+```bash
+vendor/bin/phpunit
+```
+
+### Run a single test
+```bash
+vendor/bin/phpunit --filter testMethodName
+```
+
+### Run tests with coverage
+```bash
+vendor/bin/phpunit --coverage-clover ./coverage.xml
+```
+
+### Run tests in Docker (no local DB needed)
+```bash
+./runLocalTestInDocker.sh
+```
+This starts MariaDB + MongoDB containers, runs phpunit in a PHP 8.3 container, then tears everything down.
+
+### Test database requirements
+Tests expect MySQL at `127.0.0.1:3306` (root/root, database `logtodb`) and MongoDB at `127.0.0.1:27017` (database `logtodb`). See `.env.testing`.
+
+## Architecture
+
+### Log event data flow
+```
+Laravel Log facade
+  → LogToDbHandler::__invoke (Monolog channel factory, used as 'via' in logging config)
+    → LogToDbCustomLoggingHandler::write (extends Monolog AbstractProcessingHandler)
+      → LogToDB::newFromMonolog(LogRecord)
+        → sync: LogToDB::safeWrite() → Model->generate()->save()
+        → async: dispatch(SaveNewLogEvent) queue job → safeWrite()
+```
+
+### Key source files
+- `src/LogToDbHandler.php` — Invokable channel factory that creates the Monolog Logger with handler and processors
+- `src/LogToDbCustomLoggingHandler.php` — Monolog handler that delegates to `LogToDB`
+- `src/LogToDB.php` — Core class: model selection, record writing, emergency fallback, cleanup logic
+- `src/Models/DBLog.php` — SQL Eloquent model
+- `src/Models/DBLogMongoDB.php` — MongoDB Eloquent model
+- `src/Models/BindsDynamically.php` — Trait for runtime table/connection binding on models
+- `src/Models/LogToDbCreateObject.php` — Trait with `generate()` method mapping LogRecord to model attributes, plus JSON accessors/mutators and cleanup helpers
+- `src/Jobs/SaveNewLogEvent.php` — Queueable job for async log writes
+- `src/Commands/LogCleanerUpper.php` — `php artisan log:delete` command
+- `src/config/logtodb.php` — Default package configuration
+
+### Dual database support
+`LogToDB::getModel()` inspects the database connection driver at runtime to choose between `DBLog` (SQL) and `DBLogMongoDB` (MongoDB). Both models use the same traits (`BindsDynamically` + `LogToDbCreateObject`).
+
+### Emergency fallback
+If saving to DB throws any exception, `LogToDB::emergencyLog()` falls back to PHP's native `error_log()` via Monolog's `ErrorLogHandler` — log events are never silently lost.
+
+### Custom model support
+Users can provide their own Eloquent model class via `LOG_DB_MODEL` env var. Custom models need to `use LogToDbCreateObject` trait.
+
+### Config priority
+Channel-level config in `logging.php` > `.env` vars > `config/logtodb.php` defaults.
+
+## CI
+
+GitHub Actions (`.github/workflows/unittest.yml`): matrix of Laravel 11/12 × PHP 8.3/8.4 with MySQL and MongoDB services. Coverage uploaded to Codecov.

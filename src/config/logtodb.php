@@ -24,8 +24,8 @@ return [
     | Supported connections should be same as Laravel since the Laravel DB/Eloquent
     | Supported DB engines as of this writing: [MySQL] [PostgreSQL] [SQLite] [SQL Server]
     |
-    | *MongoDB is supported with: "jenssegers/laravel-mongodb".
-    | https://github.com/jenssegers/laravel-mongodb
+    | *MongoDB is supported with: "mongodb/laravel-mongodb".
+    | https://github.com/mongodb/laravel-mongodb
     | laravel-mongodb is required to use the mongodb option for logging.
     */
     'connection' => env('LOG_DB_CONNECTION', ''),

@@ -168,18 +168,12 @@ class LogToDB
                 );
             }
             if (!empty($this->config['queue'])) {
-                if (empty($this->config['queue_name']) && empty($this->config['queue_connection'])) {
-                    dispatch(new SaveNewLogEvent($record));
-                } else if (!empty($this->config['queue_name']) && !empty($this->config['queue_connection'])) {
-                    dispatch(new SaveNewLogEvent($record))
-                        ->onConnection($this->config['queue_connection'])
-                        ->onQueue($this->config['queue_name']);
-                } else if (!empty($this->config['queue_connection'])) {
-                    dispatch(new SaveNewLogEvent($record))
-                        ->onConnection($this->config['queue_connection']);
-                } else if (!empty($this->config['queue_name'])) {
-                    dispatch(new SaveNewLogEvent($record))
-                        ->onQueue($this->config['queue_name']);
+                $job = dispatch(new SaveNewLogEvent($record, $this->config));
+                if (!empty($this->config['queue_connection'])) {
+                    $job->onConnection($this->config['queue_connection']);
+                }
+                if (!empty($this->config['queue_name'])) {
+                    $job->onQueue($this->config['queue_name']);
                 }
             } else {
                 $this->safeWrite($record);
@@ -240,37 +234,22 @@ class LogToDB
     {
         if (!empty($context['exception'])) {
             $exception = $context['exception'];
-            if (is_object($exception)) {
-                if (get_class($exception) === \Exception::class
-                    || get_class($exception) === \Throwable::class
-                    || is_subclass_of($exception, \Exception::class)
-                    || is_subclass_of($exception, \Throwable::class)
-                    || strpos(get_class($exception), "Exception") !== false
-                    || strpos(get_class($exception), "Throwable") !== false) {
+            if ($exception instanceof \Throwable) {
+                $newexception = [
+                    'message' => $exception->getMessage(),
+                    'code' => $exception->getCode(),
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine(),
+                ];
 
-                    $newexception = [];
-
-                    if (method_exists($exception, 'getMessage')) {
-                        $newexception['message'] = $exception->getMessage();
-                    }
-                    if (method_exists($exception, 'getCode')) {
-                        $newexception['code'] = $exception->getCode();
-                    }
-                    if (method_exists($exception, 'getFile')) {
-                        $newexception['file'] = $exception->getFile();
-                    }
-                    if (method_exists($exception, 'getLine')) {
-                        $newexception['line'] = $exception->getLine();
-                    }
-                    if ($trace && method_exists($exception, 'getTraceAsString')) {
-                        $newexception['trace'] = $exception->getTraceAsString();
-                    }
-                    if (method_exists($exception, 'getSeverity')) {
-                        $newexception['severity'] = $exception->getSeverity();
-                    }
-
-                    $context['exception'] = $newexception;
+                if ($trace) {
+                    $newexception['trace'] = $exception->getTraceAsString();
                 }
+                if ($exception instanceof \ErrorException) {
+                    $newexception['severity'] = $exception->getSeverity();
+                }
+
+                $context['exception'] = $newexception;
             }
         }
 
