@@ -13,7 +13,13 @@ Laravel package that provides a Monolog-based logging channel to write Laravel l
 composer install
 ```
 
-### Run tests (requires MySQL and MongoDB running locally)
+### Run tests in Docker (preferred, no local DB needed)
+```bash
+./runLocalTestInDocker.sh
+```
+This starts MariaDB + MongoDB containers, runs phpunit in a PHP 8.3 container, then tears everything down. **Always try this first when running tests.**
+
+### Run tests locally (requires MySQL and MongoDB running locally)
 ```bash
 vendor/bin/phpunit
 ```
@@ -28,13 +34,7 @@ vendor/bin/phpunit --filter testMethodName
 vendor/bin/phpunit --coverage-clover ./coverage.xml
 ```
 
-### Run tests in Docker (no local DB needed)
-```bash
-./runLocalTestInDocker.sh
-```
-This starts MariaDB + MongoDB containers, runs phpunit in a PHP 8.3 container, then tears everything down.
-
-### Test database requirements
+### Test database requirements (local only)
 Tests expect MySQL at `127.0.0.1:3306` (root/root, database `logtodb`) and MongoDB at `127.0.0.1:27017` (database `logtodb`). See `.env.testing`.
 
 ## Architecture
