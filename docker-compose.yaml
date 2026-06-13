@@ -42,7 +42,7 @@ services:
     entrypoint: bash -c "
       /wait &&
       cd /var/testing &&
-      composer install --no-interaction &&
+      composer update --no-interaction &&
       ./vendor/bin/phpunit
       "
 
