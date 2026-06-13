@@ -20,16 +20,16 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
-        "illuminate/support": ">=10.0"
+        "php": ">=8.2",
+        "illuminate/support": ">=12.0"
     },
     "require-dev": {
         "ext-mongodb": "*",
         "phpunit/phpunit": ">=10.0",
-        "orchestra/testbench": ">=8.0",
+        "orchestra/testbench": ">=10.0",
         "mockery/mockery": ">=1.5",
         "nunomaduro/collision": ">=7.0",
-        "mongodb/laravel-mongodb": ">=4"
+        "mongodb/laravel-mongodb": ">=5"
     },
     "suggest": {
         "mongodb/laravel-mongodb": "Adds support for MongoDB in Laravel/Eloquent"

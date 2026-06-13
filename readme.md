@@ -6,8 +6,16 @@
 [![Codecov](https://img.shields.io/codecov/c/github/danielme85/laravel-log-to-db.svg?style=flat-square)](https://codecov.io/gh/danielme85/laravel-log-to-db)
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/danielme85/laravel-log-to-db?style=flat-square)](https://www.codefactor.io/repository/github/danielme85/laravel-log-to-db)
 
-Custom Laravel 10+ Log channel handler that can store log events to SQL or MongoDB databases.
+Custom Laravel Log channel handler that can store log events to SQL or MongoDB databases.
 Uses Laravel native logging functionality through [Monolog](https://github.com/Seldaek/monolog).
+
+## Version compatibility
+
+| Package | Laravel | PHP       |
+|---------|---------|-----------|
+| **5.x** | 12, 13  | 8.2+      |
+| 4.x     | 10, 11  | 8.1+      |
+| 3.x     | 5.6–9   | 7.2–8.0   |
 
 * [Installation](#installation)
 * [Configuration](#configuration)
@@ -18,10 +26,6 @@ Uses Laravel native logging functionality through [Monolog](https://github.com/S
 * [Processors](#processors)
 * [Lumen Installation](#lumen-installation)
 * [Local Testing With Docker](#local-testing-with-docker)
-
-
-> :warning: For Laravel version 10 and beyond, please use version 4 or later of this package (requires PHP 8.1+).
-> <br> For Laravel version 5.6 to 9, please use version 3.x.x.
 
 ## Installation
 Use the composer require or add to composer.json.
