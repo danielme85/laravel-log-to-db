@@ -1,30 +1,26 @@
-FROM ubuntu:jammy
+FROM php:8.4-cli-alpine
 
 LABEL Maintainer="Daniel Mellum <mellum@gmail.com>" \
-      Description="A simple docker image used in phpunit testing Laravel apps."
+      Description="Lightweight PHP CLI image for phpunit testing."
 
-ENV DOCKERIZE_VERSION v0.7.0
-ENV TZ=America/New_York
-ARG DEBIAN_FRONTEND=noninteractive
+RUN apk add --no-cache \
+    bash \
+    git \
+    curl \
+    unzip \
+    autoconf \
+    gcc \
+    g++ \
+    make \
+    linux-headers \
+    mysql-client \
+    libzip-dev \
+    oniguruma-dev
 
-WORKDIR /
+RUN docker-php-ext-install pdo_mysql mbstring zip pcntl
 
-RUN apt update && apt install -y lsb-release gnupg2 ca-certificates apt-transport-https software-properties-common
-RUN apt update && add-apt-repository ppa:ondrej/php
-RUN apt update && apt upgrade -y
-RUN apt install -y curl git openssl openssh-client mysql-client bash libzip-dev zip wget
-RUN apt install -y php8.3 php8.3-dev php8.3-mysql php8.3-mongodb php8.3-curl php8.3-mbstring php8.3-pcov php8.3-cli
-
-RUN pecl install pcov
-RUN pecl install mongodb
-
-#RUN mkdir -p /etc/php81/mods-available && echo "extension=mongodb.so" >> /etc/php81/mods-available/mongodb.ini
-
-RUN apt install wget -y
-
-RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+RUN pecl install mongodb pcov \
+    && docker-php-ext-enable mongodb pcov
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
