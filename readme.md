@@ -121,11 +121,14 @@ LOG_DB_QUEUE_NAME='logToDBQueue'
 LOG_DB_QUEUE_CONNECTION='default'
 LOG_DB_MAX_COUNT=false
 LOG_DB_MAX_HOURS=false
-LOG_DB_DATETIME_FORMAT='Y-m-d H:i:s:ms'
+LOG_DB_DATETIME_FORMAT='Y-m-d H:i:s'
 ```
 
 > **PLEASE NOTE**: Starting with v2.2.0, the datetime column will be saved as a string in the format given in
 > 'datetime_format' in logtodb.php config file, or the LOG_DB_DATETIME_FORMAT value in your .env file.
+> The default format is `Y-m-d H:i:s` (seconds precision). For sub-second precision use
+> `Y-m-d H:i:s.v` (milliseconds) or `Y-m-d H:i:s.u` (microseconds) — both are supported
+> since Monolog captures microsecond timestamps by default.
 
 #### Config priority order
 There are three places you can change different options when using log-to-db:
@@ -185,9 +188,9 @@ When getting logs for specific channel or DB connection and collection you can e
 config/logging.php or connection name from config/databases.php. You can also specify collection/table name if needed as
 the third function variable when fetching the model.
 ```php
-$logsFromDefault = LogDB::model()->get(); //Get the logs from the default log channel and default connection.
-$logsFromChannel = LogDB::model('database')->get(); //Get logs from the 'database' log channel.
-$logsFromChannel = LogDB::model('customname')->get(); //Get logs from the 'customname' log channel.
+$logsFromDefault = LogToDB::model()->get(); //Get the logs from the default log channel and default connection.
+$logsFromChannel = LogToDB::model('database')->get(); //Get logs from the 'database' log channel.
+$logsFromChannel = LogToDB::model('customname')->get(); //Get logs from the 'customname' log channel.
 $logsFromMysql   = LogToDB::model(null, 'mysql')->get(); //Get all logs from the mysql connection (from Laravel database config)
 $logsFromMongoDB = LogToDB::model(null, 'mongodb')->get(); //Get all logs from the mongodb connection (from Laravel database config)
 $logsFromMysqlTable  = LogToDB::model(null, 'mysql', 'table')->get(); //Get all logs from the mysql table: 'table'

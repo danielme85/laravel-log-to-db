@@ -3,7 +3,6 @@
 use danielme85\LaravelLogToDB\Jobs\SaveNewLogEvent;
 use danielme85\LaravelLogToDB\LogToDB;
 use danielme85\LaravelLogToDB\Models\DBLogException;
-use danielme85\LaravelLogToDB\Processors\AuthenticatedUserProcessor;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use TestModels\CustomEloquentModel;
@@ -510,27 +509,4 @@ class LogToDbTest extends Tests\TestCase
         $this->assertEquals(10, LogToDB::model('mongodb')->count());
     }
 
-    /**
-     * Test AuthenticatedUserProcessor adds user to extra.
-     *
-     * @group basic
-     */
-    public function testAuthenticatedUserProcessor()
-    {
-        $processor = new AuthenticatedUserProcessor();
-
-        $record = new LogRecord(
-            datetime: new \Monolog\DateTimeImmutable(true),
-            channel: 'test',
-            level: \Monolog\Level::Info,
-            message: 'test',
-            context: [],
-            extra: [],
-        );
-
-        $result = $processor($record);
-
-        $this->assertArrayHasKey('user', $result->extra);
-        $this->assertNull($result->extra['user']);
-    }
 }

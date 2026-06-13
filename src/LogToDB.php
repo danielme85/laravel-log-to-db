@@ -175,6 +175,7 @@ class LogToDB
                 if (!empty($this->config['queue_name'])) {
                     $job->onQueue($this->config['queue_name']);
                 }
+                return true;
             } else {
                 $this->safeWrite($record);
                 return true;

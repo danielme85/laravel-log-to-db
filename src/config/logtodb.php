@@ -44,10 +44,12 @@ return [
     | Detailed log
     |--------------------------------------------------------------------------
     |
-    | Set detailed log. Detailed log means the inclusion of a context (stack trace).
-    | This will usually require quite a bit more DB storage space, and is probably
-    | only useful in development/debugging. You can still have this enabled in production
-    | environments if more detailed error logs are proffered.
+    | Controls whether the log 'context' array is stored.
+    | true  — context is stored; exceptions include a full stack trace.
+    | false — context is omitted entirely (saves DB storage).
+    |
+    | Note: setting this to false discards ALL context, not just exception traces.
+    | Use false in high-volume/production environments where storage is a concern.
     */
     'detailed' => env('LOG_DB_DETAILED', true),
 
@@ -113,9 +115,14 @@ return [
 
     /*
      |
-     | Specify the datetime format storing into the log record
+     | Specify the datetime format for storing the log datetime.
+     | Uses PHP date() format tokens: https://www.php.net/manual/en/datetime.format.php
+     | Examples:
+     |   'Y-m-d H:i:s'    — seconds precision (default)
+     |   'Y-m-d H:i:s.v'  — milliseconds precision (PHP 7.0+)
+     |   'Y-m-d H:i:s.u'  — microseconds precision
      |
      */
-    'datetime_format' => env('LOG_DB_DATETIME_FORMAT', 'Y-m-d H:i:s:ms')
+    'datetime_format' => env('LOG_DB_DATETIME_FORMAT', 'Y-m-d H:i:s')
 
 ];

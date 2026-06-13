@@ -46,7 +46,7 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
         try {
             $log = new LogToDB($this->config);
             $log->newFromMonolog($record);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             LogToDB::emergencyLog(new LogRecord(
                 datetime: new \Monolog\DateTimeImmutable(true),
                 channel: '',
