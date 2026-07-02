@@ -3,6 +3,7 @@
 namespace danielme85\LaravelLogToDB;
 
 use danielme85\LaravelLogToDB\Commands\LogCleanerUpper;
+use danielme85\LaravelLogToDB\Commands\LogDatetimeFixer;
 use Illuminate\Support\ServiceProvider as Provider;
 
 /**
@@ -42,6 +43,7 @@ class ServiceProvider extends Provider {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 LogCleanerUpper::class,
+                LogDatetimeFixer::class,
             ]);
         }
     }

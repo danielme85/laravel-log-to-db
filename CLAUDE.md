@@ -59,6 +59,7 @@ Laravel Log facade
 - `src/Models/LogToDbCreateObject.php` — Trait with `generate()` method mapping LogRecord to model attributes, plus JSON accessors/mutators and cleanup helpers
 - `src/Jobs/SaveNewLogEvent.php` — Queueable job for async log writes
 - `src/Commands/LogCleanerUpper.php` — `php artisan log:delete` command
+- `src/Commands/LogDatetimeFixer.php` — `php artisan log:fix-datetime` command; recomputes the `datetime` column from `unix_time`, for repairing rows saved with the broken pre-v5 `datetime_format`
 - `src/config/logtodb.php` — Default package configuration
 
 ### Dual database support
@@ -72,6 +73,11 @@ Users can provide their own Eloquent model class via `LOG_DB_MODEL` env var. Cus
 
 ### Config priority
 Channel-level config in `logging.php` > `.env` vars > `config/logtodb.php` defaults.
+
+### v4 → v5 datetime_format fix
+v4's default `datetime_format` (`Y-m-d H:i:s:ms`) used an invalid PHP date() token (`:ms`), corrupting stored `datetime`
+values. v5 changes the default to `Y-m-d H:i:s`. Existing rows aren't auto-corrected; users run
+`php artisan log:fix-datetime` to recompute `datetime` from the always-reliable `unix_time` column.
 
 ## CI
 

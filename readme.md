@@ -343,6 +343,26 @@ LogToDB::model()->removeOlderThan('2019-01-01');
 LogToDB::model()->removeOlderThan('2019-01-01 23:00:00');
 ```
 
+## Upgrading from v4 to v5: fixing broken datetime values
+Prior to v5, the default `datetime_format` was `Y-m-d H:i:s:ms`. The `:ms` token is not a valid PHP date() format
+token, so instead of milliseconds it re-printed the month and seconds again (e.g. `2024-01-01 12:00:00:0100`),
+corrupting the stored `datetime` column. v5 changes the default to `Y-m-d H:i:s`; use `Y-m-d H:i:s.v` for real
+millisecond precision or `Y-m-d H:i:s.u` for microseconds.
+
+Existing rows saved under the old format are not automatically corrected. Since every log record also stores a
+reliable `unix_time` integer, run the included artisan command to recompute `datetime` from `unix_time` using your
+currently configured `datetime_format`:
+```
+php artisan log:fix-datetime
+```
+Options:
+* `--dry-run` — report how many records would be fixed without writing anything.
+* `--channel=database` — only fix records for a specific logging channel.
+* `--chunk=500` — number of records updated per batch (default 500).
+
+Note: recomputing from `unix_time` only has second precision, so if you were relying on sub-second precision in the
+old (broken) values, that precision cannot be recovered.
+
 ## Processors
 Monolog ships with a set of [processors](https://github.com/Seldaek/monolog/tree/master/src/Monolog/Processor), these will generate additional data and populate the 'extra' field.
 I've also added a couple of example processors in this pacage under src/Processors.
