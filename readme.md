@@ -17,12 +17,17 @@ Uses Laravel native logging functionality through [Monolog](https://github.com/S
 | 4.x     | 10, 11  | 8.1+      |
 | 3.x     | 5.6–9   | 7.2–8.0   |
 
+> **⚠️ Upgrading from v4 to v5?** v4's default datetime format was broken and corrupted the stored `datetime` column.
+> See [Upgrading from v4 to v5: fixing broken datetime values](#upgrading-from-v4-to-v5-fixing-broken-datetime-values)
+> for the fix.
+
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Usage](#usage)
 * [Fetching Logs](#fetching-logs)
 * [Custom Eloquent Model](#custom-eloquent-model)
 * [Log Cleanup](#log-cleanup)
+* [Upgrading from v4 to v5: fixing broken datetime values](#upgrading-from-v4-to-v5-fixing-broken-datetime-values)
 * [Processors](#processors)
 * [Lumen Installation](#lumen-installation)
 * [Local Testing With Docker](#local-testing-with-docker)
