@@ -509,4 +509,56 @@ class LogToDbTest extends Tests\TestCase
         $this->assertEquals(10, LogToDB::model('mongodb')->count());
     }
 
+    /**
+     * Test the DatetimeFixer, which recomputes the stored datetime column from unix_time.
+     * Simulates records saved with the broken pre-v5 'Y-m-d H:i:s:ms' datetime_format.
+     *
+     * @group datetimeFixer
+     */
+    public function testDatetimeFixer()
+    {
+        $unixTime = \Carbon\Carbon::now()->subHour()->unix();
+        $brokenDatetime = date('Y-m-d H:i:s', $unixTime) . ':' . date('m', $unixTime) . date('s', $unixTime);
+        $correctDatetime = date(config('logtodb.datetime_format'), $unixTime);
+
+        LogToDB::model()->newQuery()->insert([
+            'message' => 'Record with broken datetime format',
+            'channel' => 'test',
+            'level' => 100,
+            'level_name' => 'DEBUG',
+            'unix_time' => $unixTime,
+            'datetime' => $brokenDatetime,
+            'created_at' => date('Y-m-d H:i:s', $unixTime),
+            'updated_at' => date('Y-m-d H:i:s', $unixTime),
+        ]);
+
+        LogToDB::model('mongodb')->newQuery()->insert([
+            'message' => 'Record with broken datetime format',
+            'channel' => 'test',
+            'level' => 100,
+            'level_name' => 'DEBUG',
+            'unix_time' => $unixTime,
+            'datetime' => $brokenDatetime,
+            'created_at' => date('Y-m-d H:i:s', $unixTime),
+            'updated_at' => date('Y-m-d H:i:s', $unixTime),
+        ]);
+
+        $this->assertEquals($brokenDatetime, LogToDB::model()->first()->datetime);
+        $this->assertEquals($brokenDatetime, LogToDB::model('mongodb')->first()->datetime);
+
+        //Dry-run should report the fix but not change anything.
+        $this->artisan('log:fix-datetime', ['--dry-run' => true])->assertExitCode(0);
+        $this->assertEquals($brokenDatetime, LogToDB::model()->first()->datetime);
+        $this->assertEquals($brokenDatetime, LogToDB::model('mongodb')->first()->datetime);
+
+        $this->artisan('log:fix-datetime')->assertExitCode(0);
+        $this->assertEquals($correctDatetime, LogToDB::model()->first()->datetime);
+        $this->assertEquals($correctDatetime, LogToDB::model('mongodb')->first()->datetime);
+
+        //Running again should be a no-op.
+        $this->artisan('log:fix-datetime')->assertExitCode(0);
+        $this->assertEquals($correctDatetime, LogToDB::model()->first()->datetime);
+        $this->assertEquals($correctDatetime, LogToDB::model('mongodb')->first()->datetime);
+    }
+
 }
