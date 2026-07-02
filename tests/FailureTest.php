@@ -1,43 +1,17 @@
 <?php
-/**
- * Created by Daniel Mellum <mellum@gmail.com>
- * Date: 9/28/2021
- * Time: 4:29 AM
- */
 
 use Illuminate\Support\Facades\Log;
 
-class FailureTest extends Orchestra\Testbench\TestCase
+class FailureTest extends Tests\TestCase
 {
-
-    protected function getEnvironmentSetUp($app)
+    protected function defineEnvironment($app)
     {
-        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../', '.env.testing');
-        $dotenv->load();
+        parent::defineEnvironment($app);
 
+        // Override to use a broken default channel (no real DB) to test emergency fallback
         $app['config']->set('logging.default', 'database');
-        $app['config']->set('logging.channels', [
-            'database' => [
-                'driver' => 'custom',
-                'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
-                'level' => 'debug',
-                'connection' => 'default',
-                'collection' => 'log',
-                'max_records' => 10,
-                'max_hours' => 1,
-                'processors' => [
-                    Monolog\Processor\HostnameProcessor::class,
-                    Monolog\Processor\MemoryUsageProcessor::class,
-                    danielme85\LaravelLogToDB\Processors\PhpVersionProcessor::class
-                ]
-            ],
-        ]);
-
-        $app['config']->set('logtodb', include __DIR__.'/../src/config/logtodb.php');
+        $app['config']->set('database.connections', []);
     }
-
-
-
 
     public function testEmergencyFailure()
     {
@@ -58,5 +32,4 @@ class FailureTest extends Orchestra\Testbench\TestCase
             $result
         );
     }
-
 }

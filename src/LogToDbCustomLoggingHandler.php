@@ -2,10 +2,7 @@
 
 namespace danielme85\LaravelLogToDB;
 
-use danielme85\LaravelLogToDB\Models\DBLogException;
-use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Handler\ErrorLogHandler;
 use Monolog\LogRecord;
 
 /**
@@ -26,25 +23,15 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
      * LogToDbHandler constructor.
      *
      * @param array $config Logging configuration from logging.php
-     * @param array $processors collection of log processors
      * @param bool $bubble Whether the messages that are handled can bubble up the stack or not
      */
     function __construct(array $config,
-                         array $processors,
                          bool $bubble = true)
     {
-
         $this->config = $config;
 
         //Set default level debug
         $level = $config['level'] ?? 'debug';
-
-        //Set the processors
-        if (!empty($processors)) {
-            foreach ($processors as $processor) {
-                $this->pushProcessor($processor);
-            }
-        }
 
         parent::__construct($level, $bubble);
     }
@@ -53,14 +40,13 @@ class LogToDbCustomLoggingHandler extends AbstractProcessingHandler
      * Write the Log
      *
      * @param \Monolog\LogRecord $record
-     * @throws DBLogException
      */
     protected function write(LogRecord $record): void
     {
         try {
             $log = new LogToDB($this->config);
             $log->newFromMonolog($record);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             LogToDB::emergencyLog(new LogRecord(
                 datetime: new \Monolog\DateTimeImmutable(true),
                 channel: '',

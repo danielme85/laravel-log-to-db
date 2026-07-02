@@ -20,19 +20,20 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
-        "illuminate/support": ">=10.0"
+        "php": "^8.2",
+        "illuminate/support": "^12.0 || ^13.0",
+        "monolog/monolog": "^3.0"
     },
     "require-dev": {
         "ext-mongodb": "*",
-        "phpunit/phpunit": ">=10.0",
-        "orchestra/testbench": ">=8.0",
-        "mockery/mockery": ">=1.5",
-        "nunomaduro/collision": ">=7.0",
-        "mongodb/laravel-mongodb": ">=4"
+        "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
+        "orchestra/testbench": "^10.0 || ^11.0",
+        "mockery/mockery": "^1.5",
+        "nunomaduro/collision": "^7.0 || ^8.0",
+        "mongodb/laravel-mongodb": "^5.0"
     },
     "suggest": {
-        "jenssegers/mongodb": "Adds support for MongoDB in Laravel/Eloquent"
+        "mongodb/laravel-mongodb": "Adds support for MongoDB in Laravel/Eloquent"
     },
     "autoload": {
         "psr-4": {
@@ -41,6 +42,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Tests\\": "tests",
             "TestModels\\": "tests/TestModels"
         }
     },
@@ -54,5 +56,6 @@
             }
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

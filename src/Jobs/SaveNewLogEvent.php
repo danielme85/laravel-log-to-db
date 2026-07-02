@@ -2,6 +2,7 @@
 
 namespace danielme85\LaravelLogToDB\Jobs;
 
+use danielme85\LaravelLogToDB\LogToDB;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,9 +16,10 @@ class SaveNewLogEvent implements ShouldQueue
      * Create a new job instance.
      *
      * @param \Monolog\LogRecord $record
+     * @param array $config
      * @return void
      */
-    public function __construct(protected LogRecord $record)
+    public function __construct(protected LogRecord $record, protected array $config = [])
     {
     }
 
@@ -28,6 +30,6 @@ class SaveNewLogEvent implements ShouldQueue
      */
     public function handle()
     {
-        app('laravel-log-to-db')->safeWrite($this->record);
+        (new LogToDB($this->config))->safeWrite($this->record);
     }
 }

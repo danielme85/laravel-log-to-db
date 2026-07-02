@@ -93,8 +93,10 @@ trait LogToDbCreateObject
     private function jsonEncodeIfNotEmpty($value)
     {
         if (!empty($value)) {
-            return @json_encode($value) ?? null;
+            return json_encode($value) ?: null;
         }
+
+        return null;
     }
 
     /**
@@ -134,10 +136,17 @@ trait LogToDbCreateObject
     {
         $current = $this->count();
         if ($current > $max) {
-            $keepers = $this->orderBy('unix_time', 'DESC')->take($max)->pluck($this->primaryKey)->toArray();
-            if ($this->whereNotIn($this->primaryKey, $keepers)->delete()) {
-                return true;
-            }
+            //Select only the records to delete (usually far fewer than the keepers) and remove them in chunks.
+            $deleted = 0;
+            $this->orderBy('unix_time', 'ASC')
+                ->take($current - $max)
+                ->pluck($this->primaryKey)
+                ->chunk(1000)
+                ->each(function ($ids) use (&$deleted) {
+                    $deleted += $this->whereIn($this->primaryKey, $ids->all())->delete();
+                });
+
+            return $deleted > 0;
         }
 
         return false;

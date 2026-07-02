@@ -30,16 +30,6 @@ class LogCleanerUpper extends Command
     protected $description = 'Cleanup/delete/prune/trim log records.';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Execute the console command.
      *
      */
@@ -50,8 +40,8 @@ class LogCleanerUpper extends Command
 
         if (!empty($channels)) {
             foreach ($channels as $name => $channel) {
-                $maxRecords = $channel['max_records'] ?? $config['purge_log_when_max_records']  ?? false;
-                $maxHours = $channel['max_hours'] ?? $config['purge_log_when_max_records'] ?? false;
+                $maxRecords = $channel['max_records'] ?? $config['max_records'] ?? false;
+                $maxHours = $channel['max_hours'] ?? $config['max_hours'] ?? false;
 
                 //delete based on numbers of records
                 if (!empty($maxRecords) && $maxRecords > 0) {
