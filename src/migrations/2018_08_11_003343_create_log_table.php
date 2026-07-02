@@ -15,7 +15,7 @@ class CreateLogTable extends Migration
     {
         if (Schema::connection(config('logtodb.connection'))->hasTable(config('logtodb.collection')) === false) {
             Schema::connection(config('logtodb.connection'))->create(config('logtodb.collection'), function (Blueprint $table) {
-                $table->increments('id');
+                $table->bigIncrements('id');
                 $table->text('message')->nullable();
                 $table->string('channel')->nullable();
                 $table->integer('level')->default(0);

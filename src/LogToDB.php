@@ -121,7 +121,13 @@ class LogToDB
     {
         //Use custom model
         if (!empty($this->model)) {
-            return new $this->model;
+            $custom = new $this->model;
+            //Apply connection/collection config when the custom model supports late binding
+            if (in_array(Models\BindsDynamically::class, class_uses_recursive($custom))) {
+                $custom->bind($this->connection, $this->collection);
+            }
+
+            return $custom;
         } else if (isset($this->database['driver']) && $this->database['driver'] === 'mongodb') {
             //MongoDB has its own Model
             $mongo = new DBLogMongoDB();

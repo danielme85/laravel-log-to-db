@@ -26,6 +26,8 @@ class LogToDbHandler
            foreach ($config['processors'] as $processorName) {
                if (class_exists($processorName) && is_a($processorName, ProcessorInterface::class, true)) {
                    $processors[] = new $processorName;
+               } else {
+                   error_log("laravel-log-to-db: configured processor '{$processorName}' was skipped, the class does not exist or does not implement " . ProcessorInterface::class);
                }
            }
         }

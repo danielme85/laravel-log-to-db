@@ -17,7 +17,7 @@ composer install
 ```bash
 ./runLocalTestInDocker.sh
 ```
-This starts MariaDB + MongoDB containers, runs phpunit in a PHP 8.3 container, then tears everything down. **Always try this first when running tests.**
+This starts MariaDB + MongoDB containers, runs phpunit in a PHP 8.4 container, then tears everything down. **Always try this first when running tests.**
 
 ### Run tests locally (requires MySQL and MongoDB running locally)
 ```bash
@@ -75,4 +75,4 @@ Channel-level config in `logging.php` > `.env` vars > `config/logtodb.php` defau
 
 ## CI
 
-GitHub Actions (`.github/workflows/unittest.yml`): matrix of Laravel 11/12 × PHP 8.3/8.4 with MySQL and MongoDB services. Coverage uploaded to Codecov.
+GitHub Actions (`.github/workflows/unittest.yml`): matrix of Laravel 12/13 with MySQL and MongoDB services. Coverage uploaded to Codecov.

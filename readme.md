@@ -240,6 +240,21 @@ class CustomLogMongo extends Eloquent
 
 LOG_DB_MODEL='App\Models\CustomLog'
 
+If you want your custom model to follow the channel-level `connection`/`collection` config instead of
+hardcoded `$table`/`$connection` properties, also add the `BindsDynamically` trait — the package will
+then bind the configured connection and table onto your model at runtime:
+
+```php
+use danielme85\LaravelLogToDB\Models\BindsDynamically;
+use danielme85\LaravelLogToDB\Models\LogToDbCreateObject;
+
+class CustomLog extends Model
+{
+    use LogToDbCreateObject;
+    use BindsDynamically;
+}
+```
+
 > **WARNING**: Fetching the model trough the dynamic Eloquent model (default behavior) have some side-effects as tables and connections are
               declared dynamically instead of assigned properties in the model class. Certain functions are broken like LogToDB::model->all(), while LogToDB::model->where()->get() will work as normal.
 >             Using your own models avoids these problems.
