@@ -5,6 +5,7 @@ use danielme85\LaravelLogToDB\LogToDB;
 use danielme85\LaravelLogToDB\Models\DBLogException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Schema;
 use TestModels\CustomEloquentModel;
 use TestModels\LogSql;
 use Monolog\LogRecord;
@@ -23,6 +24,36 @@ class LogToDbTest extends Tests\TestCase
         // Truncate tables so each test starts clean
         LogToDB::model()->truncate();
         LogToDB::model('mongodb')->truncate();
+
+        // A table deliberately missing the unix_time column, simulating a custom
+        // user model/table that predates it. Used by testDatetimeFixerSkipsRecordsWithoutUnixTime.
+        if (!Schema::connection('mysql')->hasTable('log_no_unixtime')) {
+            Schema::connection('mysql')->create('log_no_unixtime', function ($table) {
+                $table->id();
+                $table->string('message')->nullable();
+                $table->string('datetime')->nullable();
+                $table->timestamps();
+            });
+        }
+        \TestModels\LogNoUnixTime::query()->truncate();
+
+        // A separate table (same schema as 'log') for the 'customformat' channel, so its
+        // per-channel datetime_format test doesn't collide with the shared 'log' table.
+        if (!Schema::connection('mysql')->hasTable('log_customformat')) {
+            Schema::connection('mysql')->create('log_customformat', function ($table) {
+                $table->bigIncrements('id');
+                $table->text('message')->nullable();
+                $table->string('channel')->nullable();
+                $table->integer('level')->default(0);
+                $table->string('level_name', 20);
+                $table->integer('unix_time');
+                $table->string('datetime')->nullable();
+                $table->longText('context')->nullable();
+                $table->text('extra')->nullable();
+                $table->timestamps();
+            });
+        }
+        LogToDB::model('customformat')->truncate();
     }
 
     /**
@@ -230,6 +261,37 @@ class LogToDbTest extends Tests\TestCase
         $this->assertNotEmpty($logToDb->model()->where('message', '=', 'job-test')->get());
     }
 
+    /**
+     * unix_time should reflect when the log event happened (the record's own datetime),
+     * not when the queued job happened to run. Simulates a queued job that processes a
+     * log record well after it was originally created.
+     *
+     * @group job
+     */
+    public function testSaveNewLogEventJobUnixTimeMatchesRecordDatetime()
+    {
+        $logToDb = new LogToDB();
+        $recordDatetime = new \Monolog\DateTimeImmutable(true);
+        $record = new LogRecord(
+            datetime: $recordDatetime,
+            channel: 'local',
+            level: \Monolog\Level::Info,
+            message: 'job-test-delayed',
+            context: [],
+            extra: [],
+        );
+
+        //Simulate the job running well after the record was created (queue delay).
+        sleep(2);
+
+        $job = new SaveNewLogEvent($record);
+        $job->handle();
+
+        $log = $logToDb->model()->where('message', '=', 'job-test-delayed')->first();
+        $this->assertNotNull($log);
+        $this->assertEquals($recordDatetime->getTimestamp(), $log->unix_time);
+    }
+
 
     /**
      * Test model attribute types from a single log record.
@@ -352,6 +414,40 @@ class LogToDbTest extends Tests\TestCase
         config()->set('logtodb.model', CustomEloquentModel::class);
         Log::info('This is on a custom model class');
         $this->assertStringContainsString('This is on a custom model class', LogToDB::model()->latest('id')->first()->message);
+    }
+
+    /**
+     * A per-channel 'model' override (not the global logtodb.model) must be honored by
+     * LogToDB::model($channel), since that's what log:delete and log:fix-datetime use.
+     *
+     * @group model
+     */
+    public function testChannelLevelCustomModel()
+    {
+        $this->assertFalse(config('logtodb.model'));
+
+        Log::channel('custommodel')->info('This is on a channel-level custom model');
+
+        $model = LogToDB::model('custommodel');
+        $this->assertInstanceOf(CustomEloquentModel::class, $model);
+        $this->assertStringContainsString(
+            'This is on a channel-level custom model',
+            $model->latest('id')->first()->message
+        );
+    }
+
+    /**
+     * A per-channel 'datetime_format' override must actually be used when writing the
+     * datetime column, not just when log:fix-datetime recomputes it.
+     *
+     * @group model
+     */
+    public function testChannelLevelDatetimeFormat()
+    {
+        Log::channel('customformat')->info('This uses a channel-specific datetime format');
+
+        $log = LogToDB::model('customformat')->latest('id')->first();
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $log->datetime);
     }
 
     /**
@@ -559,6 +655,30 @@ class LogToDbTest extends Tests\TestCase
         $this->artisan('log:fix-datetime')->assertExitCode(0);
         $this->assertEquals($correctDatetime, LogToDB::model()->first()->datetime);
         $this->assertEquals($correctDatetime, LogToDB::model('mongodb')->first()->datetime);
+    }
+
+    /**
+     * A record with a missing/non-numeric unix_time (e.g. a custom table that predates
+     * this column) must be left alone, not overwritten with the 1970-01-01 epoch that
+     * date($format, null) would silently produce.
+     *
+     * @group datetimeFixer
+     */
+    public function testDatetimeFixerSkipsRecordsWithoutUnixTime()
+    {
+        \TestModels\LogNoUnixTime::query()->insert([
+            'message' => 'Record without a usable unix_time',
+            'datetime' => 'not-a-real-timestamp',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->artisan('log:fix-datetime', ['--channel' => 'nounixtime'])->assertExitCode(0);
+
+        $this->assertEquals(
+            'not-a-real-timestamp',
+            \TestModels\LogNoUnixTime::query()->where('message', 'Record without a usable unix_time')->first()->datetime
+        );
     }
 
 }

@@ -90,6 +90,7 @@ class LogToDB
     {
         $conn = null;
         $coll = null;
+        $customModel = null;
 
         if (!empty($channel)) {
             $channels = config('logging.channels');
@@ -100,6 +101,9 @@ class LogToDB
                 if (!empty($channels[$channel]['collection'])) {
                     $coll = $channels[$channel]['collection'];
                 }
+                if (!empty($channels[$channel]['model'])) {
+                    $customModel = $channels[$channel]['model'];
+                }
             }
         } else {
             $conn = $connection;
@@ -108,8 +112,13 @@ class LogToDB
             }
         }
 
+        $modelConfig = ['connection' => $conn, 'collection' => $coll];
+        if (!empty($customModel)) {
+            $modelConfig['model'] = $customModel;
+        }
+
         //Return new instance of this model
-        $model = new self(['connection' => $conn, 'collection' => $coll]);
+        $model = new self($modelConfig);
 
         return $model->getModel();
     }
@@ -195,7 +204,8 @@ class LogToDB
         try {
             $model = $this->getModel();
             $log = $model->generate(
-                $record
+                $record,
+                $this->getConfig('datetime_format')
             );
             $log->save();
         } catch (\Throwable $e) {

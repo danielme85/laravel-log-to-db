@@ -12,22 +12,32 @@ use Monolog\LogRecord;
 trait LogToDbCreateObject
 {
     /**
+     * Datetime format used by setDatetimeAttribute(). A real declared property (not an
+     * Eloquent attribute) so it isn't picked up by save() as a column to persist.
+     *
+     * @var string|null
+     */
+    protected $datetimeFormat;
+
+    /**
      * Create a new log object
      *
      * @param \Monolog\LogRecord $record
+     * @param string|null $datetimeFormat Overrides config('logtodb.datetime_format'), e.g. with a per-channel format.
      *
      * @return mixed
      */
-    public function generate(LogRecord $record)
+    public function generate(LogRecord $record, ?string $datetimeFormat = null)
     {
         $this->message = $record->message;
         $this->context = $record->context;
         $this->level = $record->level->value;
         $this->level_name = $record->level->getName();
         $this->channel = $record->channel;
+        $this->datetimeFormat = $datetimeFormat ?? config('logtodb.datetime_format');
         $this->datetime = $record->datetime;
         $this->extra = $record->extra;
-        $this->unix_time = time();
+        $this->unix_time = $record->datetime->getTimestamp();
 
         return $this;
     }
@@ -61,7 +71,7 @@ trait LogToDbCreateObject
      */
     public function setDatetimeAttribute(object $value)
     {
-        $this->attributes['datetime'] = $value->format(config('logtodb.datetime_format'));
+        $this->attributes['datetime'] = $value->format($this->datetimeFormat ?? config('logtodb.datetime_format'));
     }
 
     /**
