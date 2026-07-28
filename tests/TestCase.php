@@ -81,7 +81,30 @@ abstract class TestCase extends OrchestraTestCase
                 'max_records' => false,
                 'max_hours' => false,
                 'name' => 'limited',
-            ]
+            ],
+            'custommodel' => [
+                'driver' => 'custom',
+                'via' => LogToDbHandler::class,
+                'level' => 'debug',
+                'model' => \TestModels\CustomEloquentModel::class,
+                'name' => 'custommodel',
+            ],
+            'customformat' => [
+                'driver' => 'custom',
+                'via' => LogToDbHandler::class,
+                'level' => 'debug',
+                'connection' => 'default',
+                'collection' => 'log_customformat',
+                'datetime_format' => 'Y-m-d',
+                'name' => 'customformat',
+            ],
+            'nounixtime' => [
+                'driver' => 'custom',
+                'via' => LogToDbHandler::class,
+                'level' => 'debug',
+                'model' => \TestModels\LogNoUnixTime::class,
+                'name' => 'nounixtime',
+            ],
         ]);
 
         $app['config']->set('logtodb', include __DIR__.'/../src/config/logtodb.php');

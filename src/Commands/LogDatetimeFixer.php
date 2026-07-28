@@ -50,10 +50,16 @@ class LogDatetimeFixer extends Command
             $fixed = 0;
 
             $keyName = $model->getKeyName();
+            $skipped = 0;
             $model->newQuery()->orderBy($keyName)
-                ->chunkById($chunkSize, function ($records) use (&$fixed, $format, $dryRun, $model, $keyName) {
+                ->chunkById($chunkSize, function ($records) use (&$fixed, &$skipped, $format, $dryRun, $model, $keyName) {
                     foreach ($records as $record) {
-                        $correct = date($format, $record->getAttribute('unix_time'));
+                        $unixTime = $record->getAttribute('unix_time');
+                        if (!is_numeric($unixTime)) {
+                            $skipped++;
+                            continue;
+                        }
+                        $correct = date($format, $unixTime);
                         if ($record->getAttribute('datetime') !== $correct) {
                             $fixed++;
                             if (!$dryRun) {
@@ -69,6 +75,9 @@ class LogDatetimeFixer extends Command
                 $this->info("Channel '{$name}': {$fixed} record(s) would be fixed.");
             } else {
                 $this->info("Channel '{$name}': fixed {$fixed} record(s).");
+            }
+            if ($skipped > 0) {
+                $this->warn("Channel '{$name}': skipped {$skipped} record(s) with a missing/non-numeric unix_time.");
             }
         }
     }
