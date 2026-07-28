@@ -230,6 +230,37 @@ class LogToDbTest extends Tests\TestCase
         $this->assertNotEmpty($logToDb->model()->where('message', '=', 'job-test')->get());
     }
 
+    /**
+     * unix_time should reflect when the log event happened (the record's own datetime),
+     * not when the queued job happened to run. Simulates a queued job that processes a
+     * log record well after it was originally created.
+     *
+     * @group job
+     */
+    public function testSaveNewLogEventJobUnixTimeMatchesRecordDatetime()
+    {
+        $logToDb = new LogToDB();
+        $recordDatetime = new \Monolog\DateTimeImmutable(true);
+        $record = new LogRecord(
+            datetime: $recordDatetime,
+            channel: 'local',
+            level: \Monolog\Level::Info,
+            message: 'job-test-delayed',
+            context: [],
+            extra: [],
+        );
+
+        //Simulate the job running well after the record was created (queue delay).
+        sleep(2);
+
+        $job = new SaveNewLogEvent($record);
+        $job->handle();
+
+        $log = $logToDb->model()->where('message', '=', 'job-test-delayed')->first();
+        $this->assertNotNull($log);
+        $this->assertEquals($recordDatetime->getTimestamp(), $log->unix_time);
+    }
+
 
     /**
      * Test model attribute types from a single log record.

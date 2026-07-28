@@ -27,7 +27,7 @@ trait LogToDbCreateObject
         $this->channel = $record->channel;
         $this->datetime = $record->datetime;
         $this->extra = $record->extra;
-        $this->unix_time = time();
+        $this->unix_time = $record->datetime->getTimestamp();
 
         return $this;
     }
